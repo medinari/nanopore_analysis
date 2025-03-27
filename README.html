@@ -1,0 +1,963 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2025-03-27 Do 08:32 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QC</title>
+<meta name="generator" content="Org mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2020 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">QC</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9e42380">1. QC</a>
+<ul>
+<li><a href="#org2d1a2bd">1.1. create project folder and links to FATSQ raw data files:</a></li>
+<li><a href="#org46e3bbc">1.2. fastQC</a>
+<ul>
+<li><a href="#org4749ee4">1.2.1. example with only barcode09</a></li>
+<li><a href="#org93ed4a8">1.2.2. fastqc from barcode10 to barcode16</a></li>
+<li><a href="#orgabaca80">1.2.3. fastqc of all barcodes</a></li>
+<li><a href="#org608fa69">1.2.4. check total sequencews and the most relevant information from fastqc<sub>data.txt</sub></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org03d3fce">2. total sequeces fastqc files</a>
+<ul>
+<li><a href="#org2305a28">2.1. <span class="todo TODO">TODO</span> QC: fastp</a></li>
+</ul>
+</li>
+<li><a href="#orge5d1189">3. <span class="todo TODO">TODO</span> QC: MinIONQC</a></li>
+<li><a href="#org9759da0">4. relevant aditional information</a>
+<ul>
+<li><a href="#org812c04f">4.1. tools available in server</a></li>
+</ul>
+</li>
+<li><a href="#org470f032">5. databases for kraken:</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org9e42380" class="outline-2">
+<h2 id="org9e42380"><span class="section-number-2">1</span> QC</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org2d1a2bd" class="outline-3">
+<h3 id="org2d1a2bd"><span class="section-number-3">1.1</span> create project folder and links to FATSQ raw data files:</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Create a project folder<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"># create folders for compressed raw data, and decompressed raw data 
+mkdir -p ~/nanopore_analysis/{1_raw_data,2_fastq_decompressed}
+# create folders for QC
+mkdir -p ~/nanopore_analysis/{3_fastqc,4_fastp,5_minionqc}
+mkdir -p ~/nanopore_analysis/{6_nanofilt,7_nanoplot}
+# create folders for Assembly
+mkdir -p ~/nanopore_analysis/{9_metaflye,10_raven,11_canu}
+# create folders for verification tools Assembly 
+mkdir -p ~/nanopore_analysis/{12_metaquast,13_bandage}
+# show definitive folder structure
+tree ~/nanopore_analysis
+</pre>
+</div>
+
+<p>
+Create links to FASTQ raw data<br />
+</p>
+
+<p>
+IMPORTANT: <a href="https://github.com/nanoporetech/dorado">Dorado</a> tool is needed to convert pod5 to fastq, but it's unavailable on the server, so the fastq files provided were used instead.<br />
+After created the project folder, we needed to create links to conect the origin "fastq<sub>pass</sub>" folder, containing the barcode folders, to the destiny folder ~/nanopore<sub>analysis</sub>/1<sub>raw</sub><sub>data</sub>:<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"># create links to raw data (all the barcode directories with fastq.gz files stored in fastq_pass)
+ln -s /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/* ~/nanopore_analysis/1_raw_data
+# remove non-relevant folders (barcodes 01-08 and barcodes 17-24 and also the unclassified...)
+ls | grep -vE 'barcode0[9-9]|barcode1[0-6]' | xargs rm
+# now we can have access to the barcode folders 
+ls -l
+# and also access the fastq.gz files inside, like in this summary:
+for folder in barcode09 barcode1{0..6}; do
+  count=$(ls "$folder"/*.gz 2&gt;/dev/null | wc -l) # Count the .gz files in the folder
+  echo "Folder: $folder ($count gz files)"
+done
+# create links to raw data (all the barcode directories with fastq.gz files stored in fastq_pass)
+ln -s /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/* ~/nanopore_analysis/1_raw_data
+# remove non-relevant folders (barcodes 01-08 and barcodes 17-24 and also the unclassified...)
+ls | grep -vE 'barcode0[9-9]|barcode1[0-6]' | xargs rm
+# now we can have access to the barcode folders 
+ls -l
+# and also access the fastq.gz files inside, like in this summary:
+for folder in barcode09 barcode1{0..6}; do
+  count=$(ls "$folder"/*.gz 2&gt;/dev/null | wc -l) # Count the .gz files in the folder
+  echo "Folder: $folder ($count gz files)"
+done
+</pre>
+</div>
+
+<p>
+Decompressing <code>fastq.gz</code> Files<br />
+</p>
+
+<p>
+Decompress all the fastq.gz files (do not worry, it is less than 10 min)<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"># decompress all fastq.gz files (takes &lt; 10 min)
+cd ~/nanopore_analysis/1_raw_data
+for barcode in barcode*; do
+  mkdir -p ../2_fastq_decompressed/$barcode
+  gunzip -c $barcode/*.fastq.gz &gt; ../2_fastq_decompressed/$barcode/combined.fastq
+done
+ls -hs ~/nanopore_analysis/2_fastq_decompressed/*/*
+# check that fastqc worked:
+# cat ~/nanopore_analysis/2_fastq_decompressed/barcode01/combined.fastq | head -n 10
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org46e3bbc" class="outline-3">
+<h3 id="org46e3bbc"><span class="section-number-3">1.2</span> fastQC</h3>
+<div class="outline-text-3" id="text-1-2">
+</div>
+<div id="outline-container-org4749ee4" class="outline-4">
+<h4 id="org4749ee4"><span class="section-number-4">1.2.1</span> example with only barcode09</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<div class="org-src-container">
+<pre class="src src-bash"># fastqc: - requirements (output directory must exist)
+cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode09; do
+  # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  # fastqc "$barcode"/combined.fastq \
+    #        --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+    #        --extract \
+    # 	   --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
+done
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-bash">cat ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/summary.txt
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org93ed4a8" class="outline-4">
+<h4 id="org93ed4a8"><span class="section-number-4">1.2.2</span> fastqc from barcode10 to barcode16</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<div class="org-src-container">
+<pre class="src src-bash">cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode10; do
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
+done
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-bash">printf '\n==&gt; summary.txt:\n'
+cat ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/summary.txt
+printf '\n--&gt; fastqc_data.txt:\n'
+head ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/fastqc_data.txt
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgabaca80" class="outline-4">
+<h4 id="orgabaca80"><span class="section-number-4">1.2.3</span> fastqc of all barcodes</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+generate the fastqc files<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode09 barcode1{0..6}; do
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+done
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org608fa69" class="outline-4">
+<h4 id="org608fa69"><span class="section-number-4">1.2.4</span> check total sequencews and the most relevant information from fastqc<sub>data.txt</sub></h4>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org03d3fce" class="outline-2">
+<h2 id="org03d3fce"><span class="section-number-2">2</span> total sequeces fastqc files</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Acees to the fastqc<sub>data.txt</sub> file:<br />
+</p>
+
+<p>
+/home/rmedina/nanopore<sub>analysis</sub>/3<sub>fastqc</sub>/barcode09<br />
+├── combined<sub>fastqc</sub><br />
+│   ├── fastqc<sub>data.txt</sub><br />
+</p>
+
+<p>
+print resume table:<br />
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">cd /home/rmedina/nanopore_analysis/3_fastqc
+for barcode in barcode*
+do
+  printf "${barcode}:   "
+  cat /home/rmedina/nanopore_analysis/3_fastqc/"$barcode"/combined_fastqc/fastqc_data.txt \
+    | grep '^Total'
+done
+</pre>
+</div>
+
+<p>
+RESULTS:<br />
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">barcode09:</td>
+<td class="org-left">Total Sequences	1065437</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode10:</td>
+<td class="org-left">Total Sequences	729889</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode11:</td>
+<td class="org-left">Total Sequences	1217908</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode12:</td>
+<td class="org-left">Total Sequences	667557</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode13:</td>
+<td class="org-left">Total Sequences	407956</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode14:</td>
+<td class="org-left">Total Sequences	83556</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode15:</td>
+<td class="org-left">Total Sequences	735701</td>
+</tr>
+
+<tr>
+<td class="org-left">barcode16:</td>
+<td class="org-left">Total Sequences	1156564</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+a table with a most detailed information in fastqc<sub>data.txt</sub><br />
+</p>
+<ul class="org-ul">
+<li>Total Sequences<br /></li>
+<li>Sequences flagged as poor quality<br /></li>
+<li>Sequence length<br /></li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-bash">cd ~/nanopore_analysis/2_fastq_decompressed
+print_separator() {
+    printf "|-------------------------------------+-----------------------|\n"
+}
+for barcode in barcode09 barcode1{0..6}; do
+  # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  # fastqc "$barcode"/combined.fastq \
+  #        --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+  #        --extract \
+  # 	 --threads 4
+	 fastqc_file="../3_fastqc/${barcode}/combined_fastqc/fastqc_data.txt"
+
+  # Function to print the horizontal separator
+  # Print table header
+  print_separator
+  printf "| dir: %-30s |  file: %-14s |\n" "${barcode}" "combined.fastq"
+  print_separator
+  
+  # Check if the file exists and format the output
+  if [[ -f "$fastqc_file" ]]; then
+    # Define the specific lines to extract
+    sed -n '6p;7p;8p;9p;10p' "$fastqc_file" | while IFS=$'\t' read -r measure value; do
+    printf "| %-35s | %-21s |\n" "$measure" "$value"
+    done
+  else
+    printf "| %-35s | %-21s |\n" "File Missing" "N/A"
+  fi
+done
+print_separator
+</pre>
+</div>
+
+<p>
+RESULTS:<br />
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode09</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">1065437</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">29-391635</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">42</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode10</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">729889</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">61-225281</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">36</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode11</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">1217908</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">64-305294</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">44</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode12</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">667557</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">44-259254</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">44</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode13</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">407956</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">42-380798</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">40</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode14</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">83556</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">59-242572</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">43</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode15</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">735701</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">29-397562</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">69</td>
+</tr>
+</tbody>
+</table>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">dir: barcode16</th>
+<th scope="col" class="org-right">file: combined.fastq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Encoding</td>
+<td class="org-right">Sanger / Illumina 1.9</td>
+</tr>
+
+<tr>
+<td class="org-left">Total Sequences</td>
+<td class="org-right">1156564</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequences flagged as poor quality</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">Sequence length</td>
+<td class="org-right">59-241224</td>
+</tr>
+
+<tr>
+<td class="org-left">%GC</td>
+<td class="org-right">45</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div id="outline-container-org2305a28" class="outline-3">
+<h3 id="org2305a28"><span class="section-number-3">2.1</span> <span class="todo TODO">TODO</span> QC: fastp</h3>
+<div class="outline-text-3" id="text-2-1">
+<div class="org-src-container">
+<pre class="src src-sh"># cd ~/nanopore_analysis/0_scripts
+mkdir -p ~/nanopore_analysis/4_fastp
+cd $_
+wget http://opengene.org/fastp/fastp
+chmod a+x ./fastp
+ls -hs fastp
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge5d1189" class="outline-2">
+<h2 id="orge5d1189"><span class="section-number-2">3</span> <span class="todo TODO">TODO</span> QC: MinIONQC</h2>
+</div>
+
+
+<div id="outline-container-org9759da0" class="outline-2">
+<h2 id="org9759da0"><span class="section-number-2">4</span> relevant aditional information</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org812c04f" class="outline-3">
+<h3 id="org812c04f"><span class="section-number-3">4.1</span> tools available in server</h3>
+<div class="outline-text-3" id="text-4-1">
+<div class="org-src-container">
+<pre class="src src-bash">ls /group/bin/kaiju*
+ls /group/bin/kraken*
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org470f032" class="outline-2">
+<h2 id="org470f032"><span class="section-number-2">5</span> databases for kraken:</h2>
+<div class="outline-text-2" id="text-5">
+<div class="org-src-container">
+<pre class="src src-bash">tree -d /group/db
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2025-03-27 Do 08:32</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
