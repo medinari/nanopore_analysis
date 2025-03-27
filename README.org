@@ -2,229 +2,89 @@
 #+title: QC
 #+property: header-args:bash :results verbatim
 
-* folder sctructure for the nanopore analysis
+* QC
 
-** delete directory tree
+** create project folder and links to FATSQ raw data files:
 
-#+begin_src bash :results silent
-#rm -rf ~/nanopore_analysis
-#+end_src
-
-** create directory tree
+Create a project folder
 
 #+begin_src bash :results output
-#mkdir -p ~/nanopore_analysis/{1_raw_data,2_fastq_decompressed,3_fastqc,4_fastp}
+# create folders for compressed raw data, and decompressed raw data 
+mkdir -p ~/nanopore_analysis/{1_raw_data,2_fastq_decompressed}
+# create folders for QC
+mkdir -p ~/nanopore_analysis/{3_fastqc,4_fastp,5_minionqc}
+mkdir -p ~/nanopore_analysis/{6_nanofilt,7_nanoplot}
+# create folders for Assembly
+mkdir -p ~/nanopore_analysis/{9_metaflye,10_raven,11_canu}
+# create folders for verification tools Assembly 
+mkdir -p ~/nanopore_analysis/{12_metaquast,13_bandage}
+# show definitive folder structure
 tree ~/nanopore_analysis
 #+end_src
 
-#+RESULTS:
-: /home/rmedina/nanopore_analysis
-: ├── 1_raw_data
-: ├── 2_fastq_decompressed
-: └── 3_fastqc
-: 
-: 3 directories, 0 files
+Create links to FASTQ raw data
 
-** create links to raw data (barcode directories with fastq.gz)
+IMPORTANT: [[https://github.com/nanoporetech/dorado][Dorado]] tool is needed to convert pod5 to fastq, but it's unavailable on the server, so the fastq files provided were used instead.
+After created the project folder, we needed to create links to conect the origin "fastq_pass" folder, containing the barcode folders, to the destiny folder ~/nanopore_analysis/1_raw_data:
 
-#+begin_src bash :results silent
+#+begin_src bash :results silent :export both
+# create links to raw data (all the barcode directories with fastq.gz files stored in fastq_pass)
 ln -s /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/* ~/nanopore_analysis/1_raw_data
+# remove non-relevant folders (barcodes 01-08 and barcodes 17-24 and also the unclassified...)
+ls | grep -vE 'barcode0[9-9]|barcode1[0-6]' | xargs rm
+# now we can have access to the barcode folders 
+ls -l
+# and also access the fastq.gz files inside, like in this summary:
+for folder in barcode09 barcode1{0..6}; do
+  count=$(ls "$folder"/*.gz 2>/dev/null | wc -l) # Count the .gz files in the folder
+  echo "Folder: $folder ($count gz files)"
+done
+# create links to raw data (all the barcode directories with fastq.gz files stored in fastq_pass)
+ln -s /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/* ~/nanopore_analysis/1_raw_data
+# remove non-relevant folders (barcodes 01-08 and barcodes 17-24 and also the unclassified...)
+ls | grep -vE 'barcode0[9-9]|barcode1[0-6]' | xargs rm
+# now we can have access to the barcode folders 
+ls -l
+# and also access the fastq.gz files inside, like in this summary:
+for folder in barcode09 barcode1{0..6}; do
+  count=$(ls "$folder"/*.gz 2>/dev/null | wc -l) # Count the .gz files in the folder
+  echo "Folder: $folder ($count gz files)"
+done
 #+end_src
 
-#+RESULTS:
+Decompressing =fastq.gz= Files
 
-show tree of files of directories and files linked
-
-#+begin_src bash
-tree -d ~/nanopore_analysis
-#+end_src
-
-#+RESULTS:
-#+begin_example
-/home/rmedina/nanopore_analysis
-├── 1_raw_data
-│   ├── barcode01 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode01
-│   ├── barcode02 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode02
-│   ├── barcode03 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode03
-│   ├── barcode04 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode04
-│   ├── barcode05 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode05
-│   ├── barcode06 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode06
-│   ├── barcode07 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode07
-│   ├── barcode08 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode08
-│   ├── barcode09 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode09
-│   ├── barcode10 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode10
-│   ├── barcode11 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode11
-│   ├── barcode12 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode12
-│   ├── barcode13 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode13
-│   ├── barcode14 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode14
-│   ├── barcode15 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode15
-│   ├── barcode16 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode16
-│   ├── barcode17 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode17
-│   ├── barcode18 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode18
-│   ├── barcode19 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode19
-│   ├── barcode20 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode20
-│   ├── barcode21 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode21
-│   ├── barcode22 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode22
-│   ├── barcode23 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode23
-│   ├── barcode24 -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/barcode24
-│   └── unclassified -> /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/unclassified
-├── 2_fastq_decompressed
-└── 3_fastqc
-
-28 directories
-#+end_example
-
-* Decompressing Fastq Files
-
-examinating barcode09 directory content (basically compressed fastq.gz files)
+Decompress all the fastq.gz files (do not worry, it is less than 10 min)
 
 #+begin_src bash
-cd ~/nanopore_analysis/1_raw_data
-ls barcode09 | printf "==> files founded in dir barcode09: %s fastq.gz\n" $(wc -l) 
-ls barcode09 | printf " -> example: %s\n" $(ls barcode09 | head -n 3)
-#+end_src
-
-#+RESULTS:
-: ==> files founded in dir barcode09: 433 fastq.gz
-:  -> example: FBA50370_pass_barcode09_f12dc3bb_08769d1e_0.fastq.gz
-:  -> example: FBA50370_pass_barcode09_f12dc3bb_08769d1e_100.fastq.gz
-:  -> example: FBA50370_pass_barcode09_f12dc3bb_08769d1e_101.fastq.gz
-
-#+begin_src bash
-ls -hs ~/nanopore_analysis/1_raw_data
-#+end_src
-
-#+RESULTS:
-#+begin_example
-insgesamt 100K
-4,0K barcode01
-4,0K barcode02
-4,0K barcode03
-4,0K barcode04
-4,0K barcode05
-4,0K barcode06
-4,0K barcode07
-4,0K barcode08
-4,0K barcode09
-4,0K barcode10
-4,0K barcode11
-4,0K barcode12
-4,0K barcode13
-4,0K barcode14
-4,0K barcode15
-4,0K barcode16
-4,0K barcode17
-4,0K barcode18
-4,0K barcode19
-4,0K barcode20
-4,0K barcode21
-4,0K barcode22
-4,0K barcode23
-4,0K barcode24
-4,0K unclassified
-#+end_example
-
-decompress everything (do not worry, just 10 min, and keep an eye in the barcodes 9-16)
-
-#+begin_src bash
+# decompress all fastq.gz files (takes < 10 min)
 cd ~/nanopore_analysis/1_raw_data
 for barcode in barcode*; do
   mkdir -p ../2_fastq_decompressed/$barcode
   gunzip -c $barcode/*.fastq.gz > ../2_fastq_decompressed/$barcode/combined.fastq
 done
 ls -hs ~/nanopore_analysis/2_fastq_decompressed/*/*
+# check that fastqc worked:
+# cat ~/nanopore_analysis/2_fastq_decompressed/barcode01/combined.fastq | head -n 10
 #+end_src
 
-#+RESULTS:
-#+begin_example
-128K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode01/combined.fastq
- 88K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode02/combined.fastq
-296K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode03/combined.fastq
- 40K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode04/combined.fastq
- 68K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode05/combined.fastq
-192K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode06/combined.fastq
-100K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode07/combined.fastq
-120K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode08/combined.fastq
-3,6G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode09/combined.fastq
-4,1G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode10/combined.fastq
-5,8G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode11/combined.fastq
-4,8G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode12/combined.fastq
-1,2G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode13/combined.fastq
-182M /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode14/combined.fastq
-2,2G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode15/combined.fastq
-4,8G /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode16/combined.fastq
- 56K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode17/combined.fastq
-292K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode18/combined.fastq
-100K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode19/combined.fastq
- 24K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode20/combined.fastq
- 48K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode21/combined.fastq
-144K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode22/combined.fastq
-184K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode23/combined.fastq
- 56K /home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode24/combined.fastq
-#+end_example
-
-
-check that fastqc worked
-
+** fastQC
+*** example with only barcode09
 #+begin_src bash
-cat ~/nanopore_analysis/2_fastq_decompressed/barcode01/combined.fastq | head -n 10
-cat ~/nanopore_analysis/2_fastq_decompressed/barcode09/combined.fastq | head -n 20
-# ls -hs ~/nanopore_analysis/3_fastqc/ | head
-#+end_src
-
-#+RESULTS:
-#+begin_example
-@4eede51f-3389-4b4d-ac55-0346f5429335 runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=29 start_time=2025-02-20T00:46:51.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode01 barcode_alias=barcode01 parent_read_id=4eede51f-3389-4b4d-ac55-0346f5429335 basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-ATGTTTATGTAGCCTTGGTTCATTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATTTTTTTTTTTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTGATTCATAATCAGTTTGGGATTGGCAGATCATAGACTCAGGTATTGTGACAGACCAATTCATATGTCCACAGCTTGACCCTGGTGGAAGGCTGTAACCCTGATGGCAAAGCCCTGGAGTCTCCCAAACCAGTCAGGGGTCCCTGCCTCTCCCCAACTTCTTTTTTTATTTTTATTTTTTTATTTTTTTATTGTCCTTCACTTCCTTTTTTTAAATTATACTTTAAGTTTCAGGGTACATGTGCACAACGTGCAGGTTTGTTACATATGTATACATGTGCCATGTTGGTGTGCTGCACCCATTAACTCGTCATTTACATTAGGTATATCTCCTAATGCTATCCCTCCTCCCTCCCCCCACCCCACAACAGGCCCCAGTGTGTGATGTTCCCCTTCCTGTGTCCATGTGTTCTCATTGTTCAATTCCCACCTATGAGTGAGAATATGCGGTGTTTGGTTTTTTGTCCATTTCTCAGTTTGCTGAGAATGACGGTTTCCAGCTTCATTCATGTCCCTACAAAGGACATGAACTCATCATTTTTTATGGCTGCATAGTATTCCATGGTGTATATGTGCCACATTTTCTTAATCGAGTCTATCATTGTTGGACATTTGGGTTGGTTCCAAGTCTTTGCTATTGTGAATAGTGCCACAATAAACATACGTGTGCATGTGTCTTTATAGCGGCATGGTTTATAATCCTTTGGGTATATGCCCAGTAATGGGATGGCTGGGCCAAATGGTATTTCTAGTTCTAGATCCCTGAGGAGTCGCCACACTGTCTTCCACAATGGTTGAACTAGTTTACAGTCCCACCAACGTGTAAAAGTGTTCCTATTTCTCCACATCCTCTCCAGCACGTGTTGTTTCCTGACTTTTTAATGATCGCCATTCTAAGTGGTGTGAGATGGTATCTCATTGTGGTTTTGATTTGCATTTCTCTGATGGCCAGTGATGATGAGCATATTTTCATGTGTCTTTTGGCTGCATAAATGTCTTCTTTTGAGAAGTGTCTGTTCATATCCTTCACCCACTTGGTAATGGCTTGTTTTTTTCTTGTACCTTTGTTTGAGTTCATTGTAGATTCTGGATATTAGCCCTTTGTCAGATAAGTAGATTGCAAAAATTTTCTCCCATTCTGTAGGTTGCCTGTTCACTCTGATGGTAGTTTCTTTTGCTGTGCAGAAGCTCTTTAGTTTAATTAGATCCCATGTGTCAATTTTGGCTTTTGTTGCCATTGCTTTTGGTGTTTTAGACATGAAGTCCTTGTACATGCCTATGTCCTGAATGGTATTGCCTAGGTTTTCTTCTAGGGTTTTTACGGTTTTAGGTCTAACATTTAAGTCTTTAATCTATCTTGAATTAATTTTTGTATAAGATGTAAGGAAGGGATCCAGTTTCAGCTTTCTACATATGGCTAGCCAGTTTTCCCAGCACCATTGATTAAATAGGGAATCCTTTCCCCATTTCTTGTTTTTGTCAGGTTTGTCAAAGATCAGATAGTTGTAGATATGTGGAATTATTTCTGAGGGCTCTGTTCTGTTCCATTGGTCTATATCTCTGTTTTGGTACAAGTACCATGCTGTTTTGGTTACTGTAGCCTTGTAGTATAGTTTGAAGTCAGATAGCGTGATGCCTCCAGCTTTGTTCTTTTGGCTTAGGATTGACTTGGCAATGCAGGCTCTTTTTTGGTTCCATATGAACTTTAAAGTAGCTTTTTCCAATTCTGTGAAGAAAGTCATTGGTAGCTTGATGGGGATGGCATTGAATCTATAAATTACCTTGGGCAGTATGGTCATTTTCACCATATTGATTCTTCCTACCTATA
-+
-###$%%$&&&$###$%$%%&&&%$#""##$$$$$$$$$$$$$##########""""""""""""""#########$%'(./,,,,*()'%%%&%&&&&@@GLH<=<<<>3211266877889:<;4.+,''**'()$#$)()''(%'**41/02<<<<;<B@:99999<>:9970/'%%%%%$$%&'&%%%&&&''1012AABBBDBEFF>5--H@?AAAFFD:::@ECDFHGJSOKSGIJO@KIKGHFE@@7,>?7KFIIFDDEFKIBLSKAA@@342226,BFFGCD><?>EEFHBGLSNIEKKSSKSD?IFSSSJIMMSNJFFBAAAB??F@:MSSSOKKFIIPM76666JSMJMJHQHGSKSSKSRRSQKSSLOSLOHMLQHLQSSISSNMSKSSSKNSSPPPJNNSSSNLKSSSJSIBKSPSSRQQGMFHHBECDB8675448:998>MJJDDAAC888*&()*+<5455249728>@KEB@ADSQJSMLIOOSRKSSOSKQSSLJHBBGSSSIDBS>=DDFSSRKSQHJSSJOSKKSSSRMMSLSJMSORQMQLSPSKLMNHMLSNSMKSMSSSSRMEDGLSSCBA=BAHGF=>=;;<=NGKJESJSNSIOBA@@@JSSKMSSOLHSB@@@?LHMJHJLKLRSNSPSMRMSSPQQPSMSHSLSKSRLPSNNPPSONSLPNSJRSNSSIPMHJOIMJKJPOOKMLSOSSMSSKCBBBCNONSJMJISOMFAIHSPNKIJJFQRSHAJHNSLFSSSHLNGSSOSNSMSILPSSNSMKSOLSSSSMSNNSSOOKSSJSLSFDFHBB>HK====>;:;;<DKOOJMOMLOLSOSSSOSJIKKJQKOOLSKRLJLNSJQNRECDDDLLMSHSSSSSOLSSKMJSOSGSSSLHSLO???;;;::@@@>EA@@@ALJJLJGLKLMNOOIKHQFPJIJGSLQMNJPMKIJLLSKLNSOSELSSSQMSSSSQSRSMOPKSMNOMNIQSSSEECDFMILLSSIHLKGHCSSOLNQMSKLKNJSLLPMKONOKPKSRSRKMSLOMLLSSPLNNSSKQMOSNOSISLKECKHJLPSSSSPILHJLSOSSPSSBSSSPSEDDDJSLOPSLLSISSLKNNOJQNMRMRSMKFJJJHHSGACACNSKMSPSNSSRSSSSNSPSIIJSNNEGD3.,*+,,0,+,,03566AF6555CHD@?@GAJSPLSJJLMNSSKLJSLSSPMOSMLNSPPSRSSPSROSHIBFIGDCCFKJLLDADGJKSPNSSSOAQSEISSKOLISJSOSRNNSLLSRLSQSSSLLPLLPIMSSKASPNKQSSSSSSBOSSJSRPNMLSSSLKSSLKJSLINJJB@@?>BCDJSSOOLSIMNJOMPNMSNFOPNSSSLMPSQMSSKSSPNSMSRRJSSSSSPMISIEEAHGEDBBB6,-899EMSJSSSPSRSHGOSOSSONKNSOKSKMSKPGGFEFSSSNKSKRMSLJKKMSSOOHLH=<===EIEIJHHKKKKPSISSSNNNJSRNLPSISSPSKSSNSSSLSMOSOMNNSPSJLLRSRMLKLSSJSQIOSSINSOQBA@=89NLSMJLMGDDDHMMSQSKOKOSKOSPSMSSQLESPLSSGLSISNRNKSOMSOSOKGKNSSSSNKISSHFSFB?;HHHIFCD??>CDDCBCEDOESKOSMSJSMHKJOSSSMHNOMSHIHMISRSSKKSJSISKLGIKFEFHEIOJSSISMSMSSSSMIRSNKSJOLSSMNSSPHSJNRSMJQKOSJSJIHFHFGEIJJQLSQLSMLNSOSSKSSSMSOMSPNJSKJMSOLMCHISJMSMGOF*****FIHH?<PKSKIJHGNMSOJMSNIKLKMONSOBC8888SMJHHNILQOSSLRSJSSMOSKNMMJSOLPJOSILNEHHMJSFOJSJIHJISIGEKKSOJSNJKSPJKLKMISKMJIECEEESNKKCDDCDGFFLNJECC100///0//)
-@a8b7ab37-4f76-468a-b139-2a68edf84d8e runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=493 start_time=2025-02-20T14:08:32.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode01 barcode_alias=barcode01 parent_read_id=a8b7ab37-4f76-468a-b139-2a68edf84d8e basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TTTTTCCTCTACTTCGTCGTTATGAAAAACAATGTTGACGGTGGCGGCATGGTTTTCGCGTTTCTCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTCAACGGTGGTCGCGGAACATACGCACGTCGATGCACCGTCGTCGCACGTGGACTGGAGTGCGGGTGCGGTCGAGCTGCTGACGGACGAGATCGCCTGGCCGGAGACGGGCCGGGCCCGGCGCGCCGGCGTCTCCTCGTTCGGCATCAGCGGCACCAACGCCCACGTCATCCTCGAACACCCGGCACCCGTCGAGCCTGTCGACGGTGCGCCGAGCGGGACCGAGCCCGGTGTCGTCCCGCTACCGCTATCCGGAGAGTCGCCGAGGCACTGCGTGACCAGGCCGAACGCCTCCTGCTCACCCTGAGAGCGAGGGGCCCGGCCCGCGCCCGCTCGACCTCGGATACTCGTTGGCCACGACGCGCTCGGCGTTGCTCGACCACCGCGCGGTGGTACTGGCGACCGACCACGCCGATGCGGTCCGCGCGCTGACGGCGATCGCTGCCGGTGTCCCAGACGCTGCCGCCGTCGTCGGCCGTACCCGTGCGGGGCGCCACGCGATCCTCTTCTCGGGGCAGGGATCCCAGCGCCTGGGTCTGGGACGTGAGTTGTACGGCCGGTTCCGGTGTTCGCGGAGGCGTTCGACGAGGTCGTCGGCGGTCTGGATGCTGAACTGCCCGGGCAGGTCGGGTTGCGGGAGGTGATGTGGGGTGGTGCGCACAATCAGTTGAACAGAACGGGTTGGGCGCAGCCGGCGTTGTTCGCTGTGGAAGTCGCCCTGTTCCATCTGGTGGAGGATTCGGGGTGTGCGGCCGGACTTCGTCGCCGGTCACTCGATCGGTGAGATCGCGGCGGCGCACGTCGCGGGCGTGTTGTCGTTGGCGGATGCCTGCCGGTTGGTGGCGGCTCGTGCTCGGTTGATGCAGGCGCTTCCGTCGGGTGGTGCGATGATCGCCGTCCAGGCGACGGAGGACGAGGTCGTCGCGCACCTTACGGACGACGTGGCGATTGCCGCGATCAACGGGCCCACATCCGTCGTCCTCTCCGGTAGTGAGAGCGCGGCTCTCGCGGTGGCGGGGCGGCTCGCGGCGGATGGTCGGAGGACGACGCGGTTGCGGGTTTCGCACGCGTTCCACTCGCCGCTGATGGACCCGATGTTGGAGGACTTCCGCGCCGTCGCGGAGGGCCTTTCCTACGGTGCGCCGTCCCTGTCCGTCGAACCTGACGGGTGAACTGGCCTCGGCCGACGTTCTCTGTTCGGCGGAGTACTGGGTGCGGCACGTCCGCGAGGCGGTCCGTTTCGCCGACGGCGTCCGTACCCTCGCCGACCACGGCGCCACCACCTTCCTGGAACTCGGCCCGGACGGCGTCCTCTCCGCGCTGACCCAGCAGACGCTGACCGCCGACACCGACACCGACACCGACACCGACACCGAGGCCGATTCCGGCACCGACATCGTCACCGTCCCGGTCCTCCGCAAGGACCGGGACGAAGAGACCGCCGCACTCAGCGCACTCGCTCACCTCCACGCGGCAGGGCTCGCATCGACTCATGGCGTTTCTCGCCGGCACCGGCGCCGCCCGCGTCGACCTGCCGACGTACGCCTTCCAACACGCCACCTACTGGCCCACCGGCACCCCGTCCACCGCGCACGCCGCGGCCGTCGGAGTGACCGCCGCCGAACACCCACTGCTCAACGGTTCGGTCGAACTCGCCGATGAAGAAGGGGTGTTGTTCACCGGGCGGCTGTCGCTGCAGACGCATCCGTGGCTGGCCGACCACACCGTGATGGGCCAGGCACTGCTGCAGAGCTACACCCTGCTGGAGTTGGCGTTCCGGGCGGGCGACGAGGTCGGTTGCGACCGCGTCGAGGAACTGACCCTGGCCGCACCGCTGGCCCTTCCCGAACGCGGGGCCGTGCGGACCCAGGTCCGGGTCGGCGTCGCCGACGACACCGGCCGCCGCACCGTCACCGTGCGCTCCAGCCGACCGACGCGTCCTGGACCGCCCACGCCACCGGCACTCTGACGACCACCAGCGGCGCCACCCCCGCCGGCTCGCCCTTCGACGCCACGGCCTGGCCGCCGGCCAACGCCGCCCCCCTCGACACGGCCGACTGCTACGCCCGCTTCACCGCGCTCGGTTTCGGCTACGGCCCGGTCTTCCAGGGCCTGCGCGCCGCCTGGCGCGCCGGTGACGTGGTCTACGCCGAGGTGGCCCTGCCGGATGCCGCCGGGGACGCCGCGGCCGACTTCGTATTCACCCCGCACTCCTGGACGCAGCCCTGCACGCCGCCCTCGTCGCCCACGACGGAGACGAGAGCAACGGGGGACTCCCGTTCTCCTGGGAGGGCGCCACCCTCCACGCCACGGGCGCCGCCGCAGCTGCGCGTCCGGCTGACCCCGACGGGCGACGACGGGCGGTCCCGTGGCCCTCGCCGTCGCCGACACCACCGGCCGGCTCGTCGCCGTCATCGACAACCTCGTGTCCCGCCGCGTGTCCGGCGCCCAGTTGACCGGCGCCACGGGCCTCGTCCGGGACGCCCTGTTCACCCTGGACTGGACGCCGGTGGCCGAGGGCGCCGCCGGCCCGGCGACGCACGACGGCCAAGGCACTCGGGACGCCCTTCGCGCGCCGGCCGCCGTCGCGCTCATCGGAACGGGCGACGCCAGCCTGGCCACCGACCTCACCGCCGCCGGGATCCGCACCACCACCACCCCGACCTGGCCGCCCTCGCCGCGGACGACACGCAGGTCCCGAGCACGGTCCTGGTCCCCCTCACCTCAACCGCAATCGCGGCCGGAAGCGTCACCACGACGGAAACCGCCTCCGGTACCGCAACGGGAACCGGAACCGCTTCCCCGGTCGAGGCCGCCCACGCCCTGACCGCCGCCGCTCTCGCCCTCGTCCAGGAATGGCTCGGACAGGAACGCTTCGCCGGCTCCCGCGCCTGGTGTTCGTCACGACCGGCGCGGTGGCCGCCGGTGACGCCGACGTCATGGACCTGGGCGCCGCCGCGGTCTGGGGCCTGATCCGCTCCGCCCAGTCCGAGACGCCGGGCGCCTTCGTCCTCATCGACCGCGACCCCGCCCCGGGCGCCACGCACGACCGCAGTGCCGCTGCCGCCGACCGGGGGCGCCTGCTCGCCCGGGCGCTGCACACCGAGGAGCCGCAGCTCACGCTGCGCGACGGCAGCGTGCTCGCCGGTCGCCTGGCCCGCGTCGGTGCGGACGCCGCCCTCACCCCGCCGGTCGAACGTGCCTGGCGACTGGACCAGCCGGCCGGGCGAGGTCGACGGCCTCACCCTCACCCGTCGCGGCGCTGCTCCGCTGACCGGCCACGAGGTCCGCGTCGAGGTCCGGGCCGCGGGCCTGAACTTCCGGGACGTGCTGAACGCGCTCGGCATGTACCCGGGTGACGCCGGGCTGTTCGGTTCGGAGGCGGCCCGGCGTAGTGCCGATCGAGGTCGGGCCGCAGGTCACCGGTTTCGCTCCGGGCGACCGCGTCATGGGCATGATCACCGGCAGCTTCGGCTTCCTCGCCGTGGACGACGCCCGCCGCCTCACCCACCTGCCCGAGGACTGGTCCTGGAGACGGGTGCCGGTGTGCCGTTGGTGTTCCTGACGGCCTATTACGCGCTCACGGAGTTGGGCGGGTTGCGGGCGGGGGAGAAGGTGCTGGTGCATG
-+
-########"##$&'&')''()''&$$&(*)&%%$$&$$%###"##""###$$$%&&&&*,--.-.011=>FGKHICEDAEHGCBBDFDCDCGEDDB>><31310/,(''%$$#$&''%%%%$%%%),-78:9::::;<>>EFEGCCCB////0?ADBD86221010---,,++***)12?@@EIGGGIHSL54444JSQQJJISQFSQMDCDDFPJFIHDGFDD97777667<=/.../6544644444ADDDSECD>>??>BBBBPSOFHFDCCEHOHB<=IEDB>/@=;:::=BAFEIFJQSINSQORKMSKLHKOKKGJBDEA<ACCGA?>=@8-.8,+***;1...--*''''')*+&'++++////5:<>?A;:::88778;?===<<>>=4/**+/))(''(:AA@CA>EC8899<<=DHGC@AGBAAFHJFMIJIKHOKLLJHLLJIJJJLOKHKQ<8740.,&&'&'+2456666FFGISKJKLSKKNNKMNOKNOSLRRNKLNQNSONMJLSOSMKSOSSMRJMSNPSSNSHNIKKIOSBA@?@FJCFFDFD?FDCDFGKNHIKJSIGHKHHIKJHELILFPJ:9:::GJFJKJJLDEIMMNJSIEJ:99889556+)))&('&&&&'(-////.--224664412<;;:01**@ACB?;;::<=FE=>>0///24489977777IILMJMKSSNLKSKNKMIJEIDAEJDJIKH4343+;::;BCLPHF;;;63++.,,+('&$$#$%%%&'''''())+)((()*+058@>>=>@;:::9:::CDAA8333597,,-942.--,(&&''''(....0,)*)('&&&&')+,=EDDC<;4465557=<<=889DGSIGHHGEDFE@??>>AA@@@?>6666677:EFFGFIKHRKOLNHLIJKISLRMLJMNMSPSKSFSB@@A>3201?;777.((((365459:LSJHSFLKLHJMIFDAB<<<<=ESSJJKQIJEECECD@CBC<<90//11/0+)''&%%&2:<>=>DDEIJQMO?>;;>IBAA@@?><<SEHHMFFA>>?<;;;:<757=78===A>?@FGHGIFIEEC?:)%%%$$%,-.33=?AEFFFDHLSJJKAGKJJCB><5---9:>ILHGFIFFEGJJLKIIKJHGABB=;;=BDISNHGKSIKD?=:<==ACBEFDGGDBB2211132599+++++?GIJKRSKSIHFCCC<9::;>@GIOKHJJDE@@CCBFNMJNKSHDC><61'&%%&&((()(+,;;=>?8322359:;<>>>=>88878<::<;<..../LISQIKMPSRPSIIJGFIGIGHIKJONMKSOSSSJSISI?=9:9+((()------.13334,++++8999@?AACCECDGGFFEFSNIIIGFEE<1111256HGDDDDCHHGPOJIEHIFILQSIIKJKBDD@99:233432346A@@BCDKFHGGGJJSPOISMSNJMLSSPLLSKONBABBBFDEKIH@DEKSIHHHJBCDCDJKSLMPKMHA812>AIJE?=87433,)))+***,,-2=ABFIMMLSKNEDFCDIID==<=8979>>631.--.,955557?AAA@4221122=D)(:(((BJGLKJKIJJLSNJLIH@BBBCJEI>SLKLKSJJJGHIOKSPSSISLBAAABFIFGEFECCECEDELJKSONIQNHLIHHSHOSSIDBAB:88:A?D????=ABGIHMONKIIGJRSSJJHSHFGEG<<<;<GFSQMMJHKGHEDIFECFLHHHJEJFHJIOSPPRKHGGJKIJKIJNNMKOQLSLLNOILSHNSKSNSSNSSIOSMFJKKQINOSSRSNMMQLIIHFHLCDCD7665<B,++)&&%%$$$%%')7;:;<HNSKKHIIJKIMLKPQKSSKFB?;7320,+++,-/001@>>==>CBMLNNSLSLSSOMKIGILS+****GD?KKJKJFFJGGIIMSLKLMMOJIHFCFEFNLSSPJKSGHMOOHJKIGJMLSGGHFEEAA@A@HJSKHILFFDDDCCACBC<=&%%&+&&''&'*)'*+8=@GIHSDEDEDI>GGBBBA<<97889BEIDE===<<=APOLLIJRPOSKSGFGFELGMJGGRK@?>>?79666EFJSHOKOIKKHHINROJDCCB00000E=;=<;======JFGGGFJCDCDFLHDC<=>A1110199DHIKHLGKIHOSSPSKJPSSNNSSLOSQSPJSRKKSMNSOSMSRQOSJLHIIOMSNJMIHHOMLKJQOSLSSKRSSLSSQJQMJSMJHOLSNNLAMD??<:8><<:00/..6:;>;:544.,*''(''')19:BCGGGHGFJLIOSIHILME@EEGFD@=892-(%$$$&9?@BEFFD>C>CC>654443455;=>HB>>>>@BBIEFKEECCDDOSNOPSQMLSQNKSA@FFEB=:766675-,,+)%$$$%'*-)('(((-.?@;9;<=>=<=@@CAE>><::41)))))('(8977=72116;=BDJFF?7677MLD@@BNIIHJGIHFEISKIOLOHLJSEFFEIGFDHSLSISJLMOLJNLNSSMSHMSKJMMSECIFIIJGPGFAABDFGH@??@@GOLPSFSOLOIBB???BBCKIQOLLLMSILMSSIHKHKFIHJLSPSNKIIGA>>?1111OILSGFEFFJNSMFFGHH:::9:@@@E<<;::=5022=?IJINSSLSRMKJOQNSNFFGBABBCGDHGF43334=.---.2FHILJSLLOSLNGKHILSOSJHHPMJMSOK<;;556+++'(:;<;>ABCCLSJOLISOSMSJKJMSML99977::79995777=G@@AAHLSSLRSHMAMJDE?>=@==CCPLISKKJEBC?>>=98;:942224556669;=DDEHPSHHGIISHIIGGIHGKSGFEEFISIHJIIELFFFGC@>84:778CDFKOHCFJESLKHPPKKJRLPNLNNSSSLJNADEFGCCDFELMKRLSIOSSJJNHM<7777KLOJSGBB?A81118/*)&%%()*2.'&%%&'))*-.632136IGIHSHH,++++32+,++-01>>><:<?ABBCF<:98441../467878;??CBCJOINRMHDFFB?33777=<9;964332788889?AAA?@???GEEGIHLPSLRLSSJKL<7F@>>;FEGJSMCBBBBILKSOSSQHSPNLKKHB?B=BA8884345:CB<;;;;B@2....)>HNIIGHSFEDEDEBAFIKKPMIBBBCCCEHJMLLKOPJLRSSSISMPNNHDCDBCCJICDDCCFHSSJSPMSSJSMSRISQJKNDDCEDEBABSA=MFHHFFHEHKOSISLPNGKCBBA,,,,)(''&%&&(&%$$%&&%$%$$$&'311-)())-*)*..*/%%&$%&*///''&))+0@JKISSNMLJJINKKJMOMIJF<=?@A>;;;;;BGGBDA<EEHIIIDDE>=>@@H.---.10001NKFC;::?CHDEFHF979;8761112<>CDJBHICBB>=<6431/.*(**)(''&&'&&&&'(()*+-;=@BEHFF=66++,124545;=<E;3//./...0>DCCCIRJHHIIGGAFIEEDILIDBA?;<??@@ABLH=;;;;GHLJSJJGM:997797561..0213320+,,+)**2/142/0212@CAC<9++:878889<>ABCDA<<=BCCB?;>DCDIL?@@@GFKHMOSLPOOKMKROKGGHILICCCDJSQLHL@;::717?>GIGKKKJJLSKIHHMKFD6
-@465883a5-548d-421e-af45-21381c436dd6 runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=356 start_time=2025-02-20T15:04:08.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode01 barcode_alias=barcode01 parent_read_id=465883a5-548d-421e-af45-21381c436dd6 basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TGTGTACATTTACTGGTTCAGTTATATGAGCCAATCTGAGCAAAAAAATTTTTTTTTTTTTTTTCGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGT
-@9b2cfec5-7669-40c7-bfab-774f2956c658 runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=196 start_time=2025-02-19T20:59:47.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode09 barcode_alias=barcode09 parent_read_id=9b2cfec5-7669-40c7-bfab-774f2956c658 basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TTATGTATTCTGACATTTGCTATGATGACAACCGATATTAACAGATACAGCAGCAAGTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTCGTCGCTTCAGTGTAGATCTACCATCGTTTATTCAATGACTATTTTTATAAATGGGCATTTACATTGTTTCTAAGATGTTGCGATGACAATGAATGATTTTTTTTGTGTGTGTTTGTATGTGTGTGTGTGTGTGTGTGTGTGTGTTTAGTAGTCTTGGATGTGCAACTTCAGAAAAAAATCCTAAAATTGGGATCATTGGGTCGTAATGTAAACATATATGTAATCATTTGGATATTACCAAATTTTATCCCCTAAGGTTTGCACCAATTTTCTTTCCCACCAGCAATATATCTAGGGGTGCTTGTGTTCCACCTAGTAAGAGTACTGTTATTTTTTTTAATTTTTACTGATGAT
-+
-$$%&&(%$###$%&&'(*(&''('%$##""#$%&'(*,.-./**)**,,..3599888-,,,,CGEHKD>8GJHRKLJJHIGKLSKOLSHSHC=<00..0,((&%%%(('&&&(('''&&&&(13))))*223*&&&$$$$$&&&'*,05==8<JHJIJIHEGCFEFHGMRSIOLSSJSSMNMQQMKLMLRHJMJSFMKSMSSSSSPOJNOQNOIHMBABBDIJNMSIJA<771/-.-/++**)*(%$$%%&)))***2CNJLQOOKSJGGEEF@HKSSMKE=<IIOJPC@76621133@?=>DDCEG77766998888:AFFKSIJNLNOMKRHSM<<:9;>=>BE@B;;;BCGFIMOSOJJLSPLNSHK@<;==8<=8<+****AB>=54+*&%%%)(,,,-*****%%%$$%%+++,7:GGGKSLLNIGFECA8665643666311%$$$$%
-@1272278e-7a1b-4590-9dad-201c81f3a3d1 runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=411 start_time=2025-02-19T20:59:45.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode09 barcode_alias=barcode09 parent_read_id=1272278e-7a1b-4590-9dad-201c81f3a3d1 basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TGTGTGGTTTACTCGTTCGTCTATGAAAACCGATATTAACCAACTAGGCACAGCGAGTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTTTCACTGAGGTAATAATAATAAGGGGGAAGGCACCGAATCTTCTCCTAGGTTGGATGCACTGTAATCAGAACATTTGTAAGATAAGAAGGAATCTTTCCAAGGAACTAGGACATCTGACCCTCCTTTCTTCATATTCTCCTCAAAAAGGTTCCAGGAATCTACCTTTTCATATACCTTGCCCCTAGTTTTAGGATCCACTAAACCATTCTGATCTTCTTTTGGTGGCTTAGAATTAGTCCATGTGTGATCCAGATCAGAACTGGGATTTCCAGGTGCAAAGATGTGATCCCTGGAGTCATTGTTTTTCTTGCCCCAGATTTCTGGAGCTGCTTCATTGTTTATCTCACTGGGTGAATTGTCCAGTAGTTCTGAAGAAGAAAAGGCAAACCCACTTTTTGCCATCACACTCATTCGGGTCCCTAACAGAAGGTGTCTTGCTGCTTGTTGGGTGCAAATCCCAGGTATTTTTTAAAGCTTCATCATGATCTTCTTTACCAAATGCACTCCAGGCTGGGAATGGCGCCACAGCTGCTGGT
-+
-#####"###$$','%%%$####$##$$%&%$$$$$%%%&+022268::;=DGOIJIRKJPLINOSNIJIA<MLGPKIHSHJKGIJOIHJI@><65-----4+)))),//))**((')-.))***'&&&''''&&')117KISKISIFIDFEFFSSJIPMNMLGQJNQMSEFEFFGPJJKHJSMSSOLMJIC@>>>><542/,,,,+)**+(+*,@FIIGKGLILQSSNKJSOMNSQSJF0++B>?@BGGEFHSII?@@GSNMSMLIKHKLJSHHMRMNMONLSQJSSSHEJB?GSFGCCBDFSHSJJJMSMLQSSPSMFNMSSSJSNSSISOJ96JLSQNSEE9::HEDEJKMIKMSMMMIONHGHLKJINJNNRMLNOSSQSMPSOSRKKLNOMSKONSSMQMJQIQPISPPRJSKQSSHHIBADH92GJKGE<SLLHJSOSSMRLLSPLLLMOKQSSSLNJQOLMLJLLMIONLKIKLRKIJHROMJIILMSSSSSKSSMSSG>>>;::10-**&%&')))*2=@@ABDKJHIIQJMKKOOOOMSOKNQPSOOPJQONMMSPPORKLKJSPKSMOLKPHMSSQJNLKSSIHJQKL@@@;/*((-.*,9GHLLKJJKHIJLSNJNGIGPQLINOKSKIGGBA?9860-,
-@ee0a67a9-2a9b-4427-aba5-09ce7631ea5f runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=77 start_time=2025-02-19T20:59:43.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode09 barcode_alias=barcode09 parent_read_id=ee0a67a9-2a9b-4427-aba5-09ce7631ea5f basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-GTCTAATTTTACTTGGTTGGGTCTTGCAGCCGATATTAACCAACTAGGCACAGCGAGTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTCGGTGAGGGATTAATGTGGCACACGCCTGTACTTTATCTGACATAGTACTTCTTGGTAGCTTCAAGAACTCCATGAAGAATCACCAAATCTCTAGAGCGATTAGGCACTCACATTGTGCCTCCTGGGTTGCAGGTGATAAATGAATTATGCCAAGGAAAACAAAATATTGATTTCAGCTTTAAAGTTGGAAGAGGAATGGTTTTCACATTTTCCCAAGGCAAACCGTTCCAAGAGCAAAATAAGCCTCATTCCCGTAAAAGTTTCTGTTAAATCTCACTCAACTAGGAGATCATGGATGG
-+
-&'%$$$$%%&&())(*+,&%$#$$$$$$$$&'')**+**-0,,,,('''(().377777;84445;=2+2//0-,,+))))+56DIGGFIIIKPSJKGMISFEDCDDFF???0'%%%%+++)'''&&',-24<>=77*))))21+((('1789<?HIHNJKFGMEHIDFE>22220110//../89>ABEFMHHFJMA?999:KHOHINJPLKSKKNSJSLSSSRMOSSRNSSOJOQLJKMSFB@@@CMMSILNJISGHKNSJSQJHMSSJSKI?>@?BCBB<;7779=C?>>=<?CIRKNOSSHISIFHFFGMI66667CD=>GL>:45EIP;?=80//+())6=@AEGHSSIQSMKSPNIHH<;<<EGGEQKGGC?@IIE???JQLLLPMPJLJGGCCCDISGED''''()
-@6fda7e33-db8f-461c-bddf-95748364c3fa runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=272 start_time=2025-02-19T20:59:42.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode09 barcode_alias=barcode09 parent_read_id=6fda7e33-db8f-461c-bddf-95748364c3fa basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TGTTATGTTGCCTTCGTTGGTTGTGAGCCGATATTAACCGACTAGGCACAGCGAGTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTCACAGGGGTGCTGTTCCTGTCCCACGCTGGGTGGTGAACAGTTAGGTAGCAGACTCCGATCAGTGGGCTCGGAAGACAGAGCCGGGCCCTGCTGCTGGTCCCTCCACCTACAGTGTTGGTGCCCCTGTTTTCCAGGGCAGTCCTCTGTCCTTGTGATTAGCAGGAACAAGGCTGTGAGCCTGCCCTGGAGAGATGCGGATGGGATTTGGGGTCTGTTGAGGGGTCTGTACCATAGTATTAAGCTAGGTGGGTTA
-+
-%%&'%%%%%%##$&''''%%$$$$$##$$$%)(()&&'*(()*+./0/4445;;<<;>?==DFABA@>>/.***,)****02HHJ@@??@DHFLIHFGE66656665322246?76767EEDFEDE>6223332/088:?CEKPISMRLS<;;967779:99:9;>@EKLMQLJSDEEEDGJGFKMSJKJIINKLJSONPIKQIKSSMISSKNKNJOKPSNPSOOMMJLJMKGELGMJ>>>>;?77BFFFGDDFL:9999G?ACCONSMJKPKIIKKSOKSSOSSSKNOIMOLDSIG?830+(((''(*((**+*-,)(('&&&((),00:>@BB==<;+***..---011111500/000/--'
-@a316bc5a-5b7b-44b9-b309-4aad940b01e5 runid=08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 ch=459 start_time=2025-02-19T20:59:42.963769+01:00 flow_cell_id=FBA50370 basecall_gpu=NVIDIA_GeForce_RTX_3070 protocol_group_id=BIOINF26_Gruppe2 sample_id= barcode=barcode09 barcode_alias=barcode09 parent_read_id=a316bc5a-5b7b-44b9-b309-4aad940b01e5 basecall_model_version_id=dna_r10.4.1_e8.2_400bps_sup@v4.3.0
-TGTTACAAGCCTCCTAAACCAAGTTTTATTGCAAAAAAACCAATCTAACCAACTAGGCACAGCGAGTCTTGGTTGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTCGTGCGCCGCTTTTCAGTAAATATTATTTTTTATCCACTTTTACAGATAAAATATCTAAGGCTCAGAAAGATTTAGTGACTTTCCAAAGGTCACACAGTAAAGAAGTGTTTGAGCCAAAACAAAAATTGAGCAATCTGACTTCAGAGCTGTGCTCTAGACTACTTCATTACTCTATGTTCCAAAGGAATAAAGTATGTTAAATCTCTCCTTTATGTTAAGCGCAAAGAAGGGAAATGTGCTTAGTCATAAGAAAACTTGTTTTTGGACAGAATCATTAACTTGCTAAAGATTTACAGGTGGTAGAGATTCTTCTCAGTTCCCCACCCCCACTGGGTTGCTTCCTTTGGAGTCTCCTAAACTTCCTCTCTCGCCTATTAATCTGGCAGGTAGTTAGCCTAATCCTTCTCTTATGGCCAGTTCCAGATGATTTTTCCAAACTCCAAAATTTATCCCTCTTTGGAAGTCCA
-+
-##$%##########$#$$$%%%%%%&&%$$#####$#"#####$#$%&&('''14557:<<<;8889:?@BCEGKOSPHISMJJKLJH+++++PJIGMMHMJIFIEHFFF32212::;4471-,*)---CFJOJIJSLHDSSNKJKMSSJSKRQKKSKIISKPPSMLHLSHLKBAABEPSMSSSQLMMMORSNJSIJLKMOSRLNKKNRKKSMPPMSGILJAAAAFEIJSIHHFJMNRJSIICBBBBESSSPFJG@@@@AEIIED@=<;88734511FFILIMKJKKKNJMHJMKKSLPOLSKSIKQJJBCEGFFEE@A??F<>GB9+*),,,,01?KIHKIKNPNSMJLJJHGGFDC?>?>BDCCEFCBA@@A@BCD=320.(&'''''(((&'''*:;==>;=GHJGKNPHSMJLLI@@@@?>0)))689:89<<@ABEF@@@A@@>@ABAC@7,,,,8776541/0/0/--/00-/....4114324)(')-245543334=EFGC=66>00668>CCCGMGIDCCD65556=@@BCABABD@AGGE?<6-/:91*&&)----@A<9:;;980(&
-#+end_example
-
-
-* Quality Control (QC): 
-** QC: fastQC
-fastqc: - requirements (output directory must exist)
-*** QC: barcode09
-  #+begin_src bash
+# fastqc: - requirements (output directory must exist)
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode09; do
-    # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    # fastqc "$barcode"/combined.fastq \
+  # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  # fastqc "$barcode"/combined.fastq \
     #        --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
     #        --extract \
     # 	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
-  #+end_src
+#+end_src
 
-  #+RESULTS:
-  #+begin_example
+#+RESULTS:
+#+begin_example
 /home/rmedina/nanopore_analysis/3_fastqc/barcode09
 ├── combined_fastqc
 │   ├── fastqc_data.txt
@@ -249,14 +109,14 @@ done
 └── combined_fastqc.zip
 
 3 directories, 18 files
-  #+end_example
+#+end_example
 
-  #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/summary.txt
-  #+end_src
+#+end_src
 
-  #+RESULTS:
-  #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -267,24 +127,22 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
-  #+end_example
-
-*** QC: barcode10
-
-  #+begin_src bash
+#+end_example
+*** fastqc from barcode10 to barcode16
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode10; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
-  #+end_src
+#+end_src
 
-  #+RESULTS:
-  #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode10
 ├── combined_fastqc
@@ -310,14 +168,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
-  #+end_example
+#+end_example
 
-  #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/summary.txt
-  #+end_src
+#+end_src
 
-  #+RESULTS:
-  #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -328,24 +186,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
-  #+end_example
+#+end_example
 
 *** QC: barcode11
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode11; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode11
 ├── combined_fastqc
@@ -371,14 +229,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode11/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -389,24 +247,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 *** QC: barcode12
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode12; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode12
 ├── combined_fastqc
@@ -432,14 +290,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode12/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -450,24 +308,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 *** QC: barcode13
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode13; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode13
 ├── combined_fastqc
@@ -493,14 +351,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode13/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -511,24 +369,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 *** QC: barcode14
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode14; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode14
 ├── combined_fastqc
@@ -554,14 +412,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode14/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 FAIL	Per sequence quality scores	combined.fastq
@@ -572,24 +430,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 *** QC: barcode15
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode15; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode15
 ├── combined_fastqc
@@ -615,14 +473,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode15/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -633,24 +491,24 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 *** QC: barcode16
 
- #+begin_src bash
+#+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode16; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 Analysis complete for combined.fastq
 /home/rmedina/nanopore_analysis/3_fastqc/barcode16
 ├── combined_fastqc
@@ -676,14 +534,14 @@ Analysis complete for combined.fastq
 └── combined_fastqc.zip
 
 3 directories, 18 files
- #+end_example
+#+end_example
 
- #+begin_src bash
+#+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode16/combined_fastqc/summary.txt
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -694,65 +552,65 @@ WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
- #+end_example
+#+end_example
 
 
 ** QC: fastp
 
- #+begin_src bash
+#+begin_src bash
 rm -rf ~/nanopore_analysis/0_scripts
 mkdir -p ~/nanopore_analysis/0_scripts
 cd $_
 # download the latest build
 wget http://opengene.org/fastp/fastp
 chmod a+x ./fastp
- #+end_src
+#+end_src
 
- #+RESULTS:
+#+RESULTS:
 
- #+begin_src sh :results output
+#+begin_src sh :results output
 cd ~/nanopore_analysis/0_scripts
 ls ../
 # fastp -i ../
- #+end_src
+#+end_src
 
- #+RESULTS:
- : 0_scripts
- : 1_raw_data
- : 2_fastq_decompressed
- : 3_fastqc
+#+RESULTS:
+: 0_scripts
+: 1_raw_data
+: 2_fastq_decompressed
+: 3_fastqc
 
- #+begin_src sh :results output
+#+begin_src sh :results output
 mkdir -p ~/nanopore_analysis/4_fastp
 # fastp -i ../
- #+end_src
+#+end_src
  
- #+begin_src sh :results output
+#+begin_src sh :results output
 # cd ~/nanopore_analysis/0_scripts
 mkdir -p ~/nanopore_analysis/4_fastp
 cd $_
 wget http://opengene.org/fastp/fastp
 chmod a+x ./fastp
 ls -hs fastp
- #+end_src
+#+end_src
 
- #+RESULTS:
- : 9,1M fastp
+#+RESULTS:
+: 9,1M fastp
 
- #+begin_src sh :results output
+#+begin_src sh :results output
 ~/nanopore_analysis/4_fastp
 for bcode in "/home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode09":
 do
 
-ls $bcode
+  ls $bcode
 done
 #fastp -i ../2_fastq_decompressed/barcode01
 # fastp -i ../2_fastq_decompressed 
 # cd ~/nanopore_analysis/4_fastp 
 
- #+end_src
+#+end_src
 
- #+RESULTS:
+#+RESULTS:
 
 
 
@@ -781,12 +639,12 @@ ls ~/nanopore_analysis/3_fastqc
 #+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode10; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
-    fastqc "$barcode"/combined.fastq \
-           --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
-           --extract \
-	   --threads 4
-    tree ~/nanopore_analysis/3_fastqc/"$barcode"
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
 #+end_src
 
@@ -800,11 +658,11 @@ mkdir -p ~/nanopore_analysis/0_scripts
 #+begin_src bash :tangle ~/nanopore_analysis/0_scripts/fastqc_session.sh
 cd ~/nanopore_analysis/2_fastq_decompressed || exit
 for barcode in barcode*; do
-    mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"    # create output directory
-    fastqc "$barcode"/combined.fastq \                  # path to fastq file
-    --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \  # path to "created" output directory
-    --extract \                                         # output files decompressed
-    --threads 4                                         # files processed simultaneously
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"    # create output directory
+  fastqc "$barcode"/combined.fastq \                  # path to fastq file
+  --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \  # path to "created" output directory
+  --extract \                                         # output files decompressed
+  --threads 4                                         # files processed simultaneously
 done 
 #+end_src
 
@@ -842,28 +700,28 @@ screen -r fastqc_session  →  See the session output interactively
 
 * tools in the server
 
- #+begin_src bash
+#+begin_src bash
 ls /group/bin/ka*
 ls /group/bin/kra*
 ls /group/bin/kra*
- #+end_src
+#+end_src
 
- #+RESULTS:
- : /group/bin/kaiju
- : /group/bin/kaiju2krona
- : /group/bin/kaiju2table
- : /group/bin/kaiju-addTaxonNames
- : /group/bin/kaiju-mergeOutputs
- : /group/bin/kallisto
- : /group/bin/kraken2
- : /group/bin/kraken2-build
- : /group/bin/kraken2-inspect
+#+RESULTS:
+: /group/bin/kaiju
+: /group/bin/kaiju2krona
+: /group/bin/kaiju2table
+: /group/bin/kaiju-addTaxonNames
+: /group/bin/kaiju-mergeOutputs
+: /group/bin/kallisto
+: /group/bin/kraken2
+: /group/bin/kraken2-build
+: /group/bin/kraken2-inspect
 
 * databases fro kraken:
 
- #+begin_src bash
+#+begin_src bash
 tree -d /group/
- #+end_src
+#+end_src
 
 * total sequeces fastqc files
 
@@ -871,18 +729,18 @@ tree -d /group/
 ├── combined_fastqc
 │   ├── fastqc_data.txt
 
- #+begin_src bash
+#+begin_src bash
 cd /home/rmedina/nanopore_analysis/3_fastqc
 for barcode in barcode*
 do
-echo "$barcode"
-cat /home/rmedina/nanopore_analysis/3_fastqc/"$barcode"/combined_fastqc/fastqc_data.txt \
-| grep Total
+  echo "$barcode"
+  cat /home/rmedina/nanopore_analysis/3_fastqc/"$barcode"/combined_fastqc/fastqc_data.txt \
+    | grep Total
 done
- #+end_src
+#+end_src
 
- #+RESULTS:
- #+begin_example
+#+RESULTS:
+#+begin_example
  barcode09
  Total Sequences	1065437
  #Total Deduplicated Percentage	99.57187108196082
@@ -907,4 +765,4 @@ done
  barcode16
  Total Sequences	1156564
  #Total Deduplicated Percentage	99.84346493849947
- #+end_example
+#+end_example
