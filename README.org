@@ -246,14 +246,14 @@ done
 #+end_src
 
 RESULTS:
-barcode09:   Total Sequences	1065437
-barcode10:   Total Sequences	729889
-barcode11:   Total Sequences	1217908
-barcode12:   Total Sequences	667557
-barcode13:   Total Sequences	407956
-barcode14:   Total Sequences	83556
-barcode15:   Total Sequences	735701
-barcode16:   Total Sequences	1156564
+| barcode09: | Total Sequences	1065437 |
+| barcode10: | Total Sequences	729889  |
+| barcode11: | Total Sequences	1217908 |
+| barcode12: | Total Sequences	667557  |
+| barcode13: | Total Sequences	407956  |
+| barcode14: | Total Sequences	83556   |
+| barcode15: | Total Sequences	735701  |
+| barcode16: | Total Sequences	1156564 |
 
 
 a table with a most detailed information in fastqc_data.txt
