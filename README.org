@@ -1,13 +1,13 @@
 #+startup: showeverything
 #+title: QC
-#+OPTIONS: \n:t
+#+OPTIONS: \n:t ':t toc:t title:nil
 #+PROPERTY: header-args:bash :results verbatim
 
 * QC
 
 ** create project folder and links to FATSQ raw data files:
 
-Create a project folder
+*** Create a project folder
 
 #+begin_src bash :results output
 # create folders for compressed raw data, and decompressed raw data 
@@ -23,7 +23,7 @@ mkdir -p ~/nanopore_analysis/{12_metaquast,13_bandage}
 tree ~/nanopore_analysis
 #+end_src
 
-Create links to FASTQ raw data
+*** Create links to FASTQ raw data
 
 IMPORTANT: [[https://github.com/nanoporetech/dorado][Dorado]] tool is needed to convert pod5 to fastq, but it's unavailable on the server, so the fastq files provided were used instead.
 After created the project folder, we needed to create links to conect the origin "fastq_pass" folder, containing the barcode folders, to the destiny folder ~/nanopore_analysis/1_raw_data:
@@ -53,7 +53,7 @@ for folder in barcode09 barcode1{0..6}; do
 done
 #+end_src
 
-Decompressing =fastq.gz= Files
+*** Decompressing =fastq.gz= Files
 
 Decompress all the fastq.gz files (do not worry, it is less than 10 min)
 
@@ -84,8 +84,9 @@ for barcode in barcode09; do
 done
 #+end_src
 
-#+RESULTS:
-#+begin_example
+RESULTS: all the fastqc results have the same structure
+
+#+begin_example bash 
 /home/rmedina/nanopore_analysis/3_fastqc/barcode09
 ├── combined_fastqc
 │   ├── fastqc_data.txt
@@ -116,8 +117,8 @@ done
 cat ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/summary.txt
 #+end_src
 
-#+RESULTS:
-#+begin_example
+RESULTS:
+#+begin_example bash
 PASS	Basic Statistics	combined.fastq
 FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
@@ -130,9 +131,7 @@ PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
 #+end_example
 
-
-
-*** fastqc from barcode10 to barcode16
+*** generate the rest fastqc: from barcode10 to barcode16
 #+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode10; do
@@ -141,38 +140,8 @@ for barcode in barcode10; do
          --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
          --extract \
 	 --threads 4
-  tree ~/nanopore_analysis/3_fastqc/"$barcode"
 done
 #+end_src
-
-#+RESULTS:
-#+begin_example
-Analysis complete for combined.fastq
-/home/rmedina/nanopore_analysis/3_fastqc/barcode10
-├── combined_fastqc
-│   ├── fastqc_data.txt
-│   ├── fastqc.fo
-│   ├── fastqc_report.html
-│   ├── Icons
-│   │   ├── error.png
-│   │   ├── fastqc_icon.png
-│   │   ├── tick.png
-│   │   └── warning.png
-│   ├── Images
-│   │   ├── adapter_content.png
-│   │   ├── duplication_levels.png
-│   │   ├── per_base_n_content.png
-│   │   ├── per_base_quality.png
-│   │   ├── per_base_sequence_content.png
-│   │   ├── per_sequence_gc_content.png
-│   │   ├── per_sequence_quality.png
-│   │   └── sequence_length_distribution.png
-│   └── summary.txt
-├── combined_fastqc.html
-└── combined_fastqc.zip
-
-3 directories, 18 files
-#+end_example
 
 #+begin_src bash
 printf '\n==> summary.txt:\n'
@@ -181,8 +150,8 @@ printf '\n--> fastqc_data.txt:\n'
 head ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/fastqc_data.txt
 #+end_src
 
-#+RESULTS:
-#+begin_example
+RESULTS:
+#+begin_example bash
 
 ==> summary.txt:
 PASS	Basic Statistics	combined.fastq
@@ -209,9 +178,7 @@ Sequence length	61-225281
 %GC	36
 #+end_example
 
-*** fastqc of all barcodes
-
-generate the fastqc files
+*** generate fastqc of all barcodes
 
 #+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
@@ -224,9 +191,9 @@ for barcode in barcode09 barcode1{0..6}; do
 done
 #+end_src
 
-*** check total sequencews and the most relevant information from fastqc_data.txt
+*** check total sequences and the most relevant information from fastqc_data.txt
 
-* total sequeces fastqc files
+*** total sequeces fastqc files
 
 Acees to the fastqc_data.txt file:
 
