@@ -245,22 +245,21 @@ do
 done
 #+end_src
 
-#+RESULTS:
-: barcode09:   Total Sequences	1065437
-: barcode10:   Total Sequences	729889
-: barcode11:   Total Sequences	1217908
-: barcode12:   Total Sequences	667557
-: barcode13:   Total Sequences	407956
-: barcode14:   Total Sequences	83556
-: barcode15:   Total Sequences	735701
-: barcode16:   Total Sequences	1156564
+RESULTS:
+barcode09:   Total Sequences	1065437
+barcode10:   Total Sequences	729889
+barcode11:   Total Sequences	1217908
+barcode12:   Total Sequences	667557
+barcode13:   Total Sequences	407956
+barcode14:   Total Sequences	83556
+barcode15:   Total Sequences	735701
+barcode16:   Total Sequences	1156564
 
 
-print the most relevant data in fastqc_data.txt
+a table with a most detailed information in fastqc_data.txt
 - Total Sequences
 - Sequences flagged as poor quality
 - Sequence length
-
 
 #+begin_src bash :wrap src org
 cd ~/nanopore_analysis/2_fastq_decompressed
