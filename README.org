@@ -294,7 +294,8 @@ done
 print_separator
 #+end_src
 
-#+RESULTS:
+RESULTS:
+
 #+begin_src org
 |-------------------------------------+-----------------------|
 | dir: barcode09                      |  file: combined.fastq |
