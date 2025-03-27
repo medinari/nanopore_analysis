@@ -1,5 +1,6 @@
 #+startup: showeverything
 #+title: QC
+#+options: \n:t
 #+property: header-args:bash :results verbatim
 
 * QC
