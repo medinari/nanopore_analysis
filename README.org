@@ -70,6 +70,7 @@ ls -hs ~/nanopore_analysis/2_fastq_decompressed/*/*
 #+end_src
 
 ** fastQC
+
 *** example with only barcode09
 #+begin_src bash
 # fastqc: - requirements (output directory must exist)
@@ -113,6 +114,20 @@ RESULTS: all the fastqc results have the same structure
 3 directories, 18 files
 #+end_example
 
+BASIC STATISTICS FASTQC: summary.txt
+
+The Basic Statistics module provides key data about the analyzed file:
+
+- *Filename*: Name of the analyzed file.  
+- *File type*: Base calls or colorspace.  
+- *Encoding*: ASCII quality format.  
+- *Total Sequences*: Number processed (actual/estimated).  
+- *Filtered Sequences*: Removed sequences (Casava mode).  
+- *Sequence Length*: Shortest to longest range.  
+- *%GC*: Percentage of guanine and cytosine bases.  
+
+here in the folder barcode09 we can see the summary.txt:
+
 #+begin_src bash
 cat ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/summary.txt
 #+end_src
@@ -132,6 +147,7 @@ PASS	Adapter Content	combined.fastq
 #+end_example
 
 *** generate the rest fastqc: from barcode10 to barcode16
+
 #+begin_src bash
 cd ~/nanopore_analysis/2_fastq_decompressed
 for barcode in barcode10; do
@@ -159,7 +175,7 @@ FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
 FAIL	Per base sequence content	combined.fastq
 FAIL	Per sequence GC content	combined.fastq
-PASS	Per base N content	combined.fastq
+PASS	Per base N content	combiZDVCned.fastq
 WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
@@ -178,6 +194,16 @@ Sequence length	61-225281
 %GC	36
 #+end_example
 
+ * Per base sequence quality: FAIL
+*Cause*: Sequencing chemistry degrades with increasing read length and for long runs
+*Solution*: sequencing chemistry degrades with increasing read length and for long runs
+
+#+begin_src bash
+ls ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/fastqc_report.html
+scp -r -P 1722 bioinf02:/home/rmedina/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/fastqc_report.html /home/riccardo
+#+end_src
+
+
 *** generate fastqc of all barcodes
 
 #+begin_src bash
@@ -193,15 +219,15 @@ done
 
 *** check total sequences and the most relevant information from fastqc_data.txt
 
-*** total sequeces fastqc files
+**** total sequeces fastqc files
 
-Acees to the fastqc_data.txt file:
+Path to the fastqc_data.txt file:
 
 /home/rmedina/nanopore_analysis/3_fastqc/barcode09
 ├── combined_fastqc
 │   ├── fastqc_data.txt
 
-print resume table:
+**** summary table:
 
 #+begin_src bash
 cd /home/rmedina/nanopore_analysis/3_fastqc
