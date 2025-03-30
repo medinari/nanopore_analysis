@@ -1,0 +1,348 @@
+#+startup: showeverything
+#+title: Oxford Nanopore Technology ONT sequencing - source data exploration
+#+OPTIONS: \n:t ':t toc:t title:nil
+#+PROPERTY: header-args:bash :results verbatim
+
+* Check source files
+  
+#+begin_src bash
+tree -L 1 /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb
+#+end_src
+
+RESULTS:
+#+begin_example bash
+/group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb
+├── barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+├── fastq_pass
+├── final_summary_FBA50370_f12dc3bb_08769d1e.txt
+├── other_reports
+├── pod5
+├── pore_activity_FBA50370_f12dc3bb_08769d1e.csv
+├── report_FBA50370_20250219_2057_f12dc3bb.html
+├── report_FBA50370_20250219_2057_f12dc3bb.json
+├── report_FBA50370_20250219_2057_f12dc3bb.md
+├── sample_sheet_FBA50370_20250219_2057_f12dc3bb.csv
+├── sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+└── throughput_FBA50370_f12dc3bb_08769d1e.csv
+
+3 directories, 9 files
+#+end_example
+
+#+begin_src bash
+ls -hs /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb
+#+end_src
+
+RESULTS:
+#+begin_example bash
+insgesamt 3,0G
+4,0K barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+4,0K fastq_pass
+4,0K final_summary_FBA50370_f12dc3bb_08769d1e.txt
+4,0K other_reports
+ 12K pod5
+1,6M pore_activity_FBA50370_f12dc3bb_08769d1e.csv
+1,4M report_FBA50370_20250219_2057_f12dc3bb.html
+ 14M report_FBA50370_20250219_2057_f12dc3bb.json
+2,0M report_FBA50370_20250219_2057_f12dc3bb.md
+4,0K sample_sheet_FBA50370_20250219_2057_f12dc3bb.csv
+3,0G sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+360K throughput_FBA50370_f12dc3bb_08769d1e.csv
+#+end_example
+
+*** barcode_alignment.tsv
+show content of: barcode_alignment.tsv
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+#+RESULTS:
+| barcode   | alias     | type        | target_unclassified | acquisition_run_id                       | protocol_group_id | sample_id | flow_cell_id | started                          |
+| barcode01 | barcode01 | test_sample |                  26 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode02 | barcode02 | test_sample |                  34 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode03 | barcode03 | test_sample |                  52 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode04 | barcode04 | test_sample |                  13 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode05 | barcode05 | test_sample |                  12 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode06 | barcode06 | test_sample |                  41 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode07 | barcode07 | test_sample |                  36 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode08 | barcode08 | test_sample |                  26 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+| barcode09 | barcode09 | test_sample |             1065437 | 08769d1e9615ba04f84fa2f326c1b3c1b9b095e6 | BIOINF26_Gruppe2  |           | FBA50370     | 2025-02-19T20:57:14.963769+01:00 |
+
+
+show MOST RELEVANT content of: barcode_alignment.tsv
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+RESULTS: barcode_alignment.tsv
+| barcode      | alias        | type        | target_unclassified |
+| barcode09    | barcode09    | test_sample |             1065437 |
+| barcode10    | barcode10    | test_sample |              729889 |
+| barcode11    | barcode11    | test_sample |             1217908 |
+| barcode12    | barcode12    | test_sample |              667557 |
+| barcode13    | barcode13    | test_sample |              407956 |
+| barcode14    | barcode14    | test_sample |               83556 |
+| barcode15    | barcode15    | test_sample |              735701 |
+| barcode16    | barcode16    | test_sample |             1156564 |
+| unclassified | unclassified | na          |             1128173 |
+
+*** final_summary.txt
+
+content:
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=final_summary.txt
+head "$file"
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=final_summary.txt
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** fastq_pass
+content:
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb
+tree -d fastq_pass/
+#+end_src
+
+RESULTS:
+#+begin_example bash
+fastq_pass/
+├── barcode01
+├── barcode02
+├── barcode03
+├── barcode04
+├── barcode05
+├── barcode06
+├── barcode07
+├── barcode08
+├── barcode09
+├── barcode10
+├── barcode11
+├── barcode12
+├── barcode13
+├── barcode14
+├── barcode15
+├── barcode16
+├── barcode17
+├── barcode18
+├── barcode19
+├── barcode20
+├── barcode21
+├── barcode22
+├── barcode23
+├── barcode24
+└── unclassified
+
+25 directories
+#+end_example
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** final_summary_FBA50370_f12dc3bb_08769d1e.txt
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** other_reports
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** pod5
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** pore_activity_FBA50370_f12dc3bb_08769d1e.csv
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** report_FBA50370_20250219_2057_f12dc3bb.html
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** report_FBA50370_20250219_2057_f12dc3bb.json
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** report_FBA50370_20250219_2057_f12dc3bb.md
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** sample_sheet_FBA50370_20250219_2057_f12dc3bb.csv
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+*** sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+content:
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+printf "total lines: %s \n\n" "$(wc -l sequencing_summary_*.txt)"
+head sequencing_summary_*.txt
+# head "$file"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+total lines: 7193197 sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt 
+
+filename_fastq	filename_fast5	filename_pod5	parent_read_id	read_id	run_id	channel	mux	minknow_events	start_time	duration	passes_filtering	template_start	num_events_template	template_duration	sequence_length_template	mean_qscore_template	median_template	mad_template	pore_type	experiment_id	sample_id	end_reason	alias	type	barcode_arrangement	barcode_kit	barcode_variant	barcode_score	barcode_front_score	barcode_front_foundseq_length	barcode_front_begin_index	barcode_rear_score	barcode_rear_foundseq_length	barcode_rear_end_index
+FBA50370_pass_barcode09_f12dc3bb_08769d1e_4.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	c0567532-f6bd-43b3-aedf-2b58694cddcb	c0567532-f6bd-43b3-aedf-2b58694cddcb	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	482	1	16330	2731.162800	25.179200	TRUE	2731.164800	20981	25.177200	11068	16.757633	420.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode09	test_sample	barcode09	RBK24_kit14	n/a	100.000000	100.000000	71	40	-100.000000	0	11068
+FBA50370_pass_barcode10_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	c6ebfbb9-2667-4065-8cd3-698986febeb3	c6ebfbb9-2667-4065-8cd3-698986febeb3	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	178	2	1116	152.744600	1.995400	TRUE	152.746600	1661	1.993400	620	20.606306	413.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode10	test_sample	barcode10	RBK24_kit14	n/a	92.307693	92.307693	65	33	-100.000000	0	620
+FBA50370_pass_barcode09_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	9b2cfec5-7669-40c7-bfab-774f2956c658	9b2cfec5-7669-40c7-bfab-774f2956c658	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	196	2	772	153.032000	1.369200	TRUE	153.034000	1139	1.367200	455	11.583979	415.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode09	test_sample	barcode09	RBK24_kit14	n/a	76.923080	76.923080	68	41	-100.000000	0	455
+FBA50370_pass_barcode14_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	ebdadf3d-4f4a-4eee-87fd-d64a6ecfe875	ebdadf3d-4f4a-4eee-87fd-d64a6ecfe875	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	298	2	685	152.047800	1.329400	TRUE	152.049800	1106	1.327400	106	9.203537	419.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode14	test_sample	barcode14	RBK24_kit14	n/a	82.051285	82.051285	66	39	-100.000000	0	106
+FBA50370_pass_barcode15_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	0768ec25-e646-41a2-972c-336c5bb58e6c	0768ec25-e646-41a2-972c-336c5bb58e6c	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	122	2	753	152.204200	1.282200	TRUE	152.206200	1066	1.280200	447	16.768473	401.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode15	test_sample	barcode15	RBK24_kit14	n/a	100.000000	100.000000	73	38	-100.000000	0	447
+FBA50370_pass_barcode09_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	1272278e-7a1b-4590-9dad-201c81f3a3d1	1272278e-7a1b-4590-9dad-201c81f3a3d1	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	411	2	1034	151.084800	1.695600	TRUE	151.086800	1411	1.693600	650	16.933184	428.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode09	test_sample	barcode09	RBK24_kit14	n/a	100.000000	100.000000	71	41	-100.000000	0	650
+FBA50370_pass_unclassified_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	743c3b59-4292-47b2-bcf8-8426adb4f5f4	743c3b59-4292-47b2-bcf8-8426adb4f5f4	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	289	2	758	148.972400	1.504600	TRUE	148.974400	1252	1.502600	325	2.312832	421.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	unclassified	na	unclassified	unclassified	n/a	0.000000	0.000000	0	0	0.000000	0	0
+FBA50370_pass_barcode10_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	51575451-9701-4a21-8c4d-e06c8fd73d5b	51575451-9701-4a21-8c4d-e06c8fd73d5b	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	247	2	698	151.497200	1.273800	TRUE	151.499200	1059	1.271800	147	15.848551	415.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode10	test_sample	barcode10	RBK24_kit14	n/a	87.179489	87.179489	73	36	-100.000000	0	147
+FBA50370_pass_barcode14_f12dc3bb_08769d1e_0.fastq.gz	-	FBA50370_f12dc3bb_08769d1e_0.pod5	fae0a56c-5dd3-4cb5-a9c8-f0c40d3fe3c3	fae0a56c-5dd3-4cb5-a9c8-f0c40d3fe3c3	08769d1e9615ba04f84fa2f326c1b3c1b9b095e6	334	2	1180	149.967000	2.017000	TRUE	149.969000	1679	2.015000	730	17.737404	424.413361	107.949036	not_set	BIOINF26_Gruppe2	-	signal_positive	barcode14	test_sample	barcode14	RBK24_kit14	n/a	92.307693	92.307693	73	39	-100.000000	0	730
+#+end_example
+
+MOST RELEVANT CONTENT:
+
+#+name: sequencing_summary_*.txt
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+awk '{sum += $2; count++; if(min == "" || $2 < min) min=$2; if($2 > max) max=$2} END {print "Total Reads:", count, "\nMin Length:", min, "\nMax Length:", max, "\nAvg Length:", sum/count}' \
+    sequencing_summary_FBA50370_*.txt
+#+end_src
+
+#+RESULTS: sequencing_summary_*.txt
+: Total Reads: 7193197 
+: Min Length: - 
+: Max Length: filename_fast5 
+: Avg Length: 0
+
+*** throughput_FBA50370_f12dc3bb_08769d1e.csv
+content:
+#+begin_src bash
+head /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+#+end_src
+
+MOST RELEVANT CONTENT:
+
+#+name: barcode_alignment.tsv
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+file=barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+cat "$file" | awk 'NR == 1 || (NR >= 10 && NR <= 17) || NR == 26 {print $1, $2, $3, $4}'
+#+end_src
+
+

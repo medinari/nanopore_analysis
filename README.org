@@ -428,6 +428,8 @@ cd ~/nanopore_analysis/5_minionqc
 curl https://raw.githubusercontent.com/roblanf/minion_qc/master/MinIONQC.R > MinIONQC.R
 #+end_src
 
+#+RESULTS:
+
 In this project, the 433 .fastq files contained in each barcode folder, were joined in one called =combined.fastq=. As a result, each barcode folder contain only one =sequencing_summary.txt=, which will be used as an input for minion_qc
 
 run the script
@@ -537,3 +539,8 @@ tree -d /group/db
 24 directories
 #+end_example
 
+* detete the whole project
+
+#+begin_src bash
+rm rf ~/nanopore_analysis/
+#+end_src
