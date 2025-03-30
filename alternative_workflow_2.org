@@ -1,0 +1,706 @@
+#+startup: showeverything
+#+title: Oxford Nanopore Technology ONT sequencing - data analysis
+#+OPTIONS: \n:t ':t toc:t title:nil
+#+PROPERTY: header-args:bash :results verbatim
+
+* creating project directory and populate it with raw .fastq.gz and reports data
+
+The main idea is to get the raw reports files (.txt,.tsv) and fastq_pass/fastq.gz files into a project folder to organize them before analysis 
+
+This is the starting point:
+
+#+begin_src bash
+tree -L 1 /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/
+├── barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+├── fastq_pass
+├── final_summary_FBA50370_f12dc3bb_08769d1e.txt
+├── other_reports
+├── pod5
+├── pore_activity_FBA50370_f12dc3bb_08769d1e.csv
+├── report_FBA50370_20250219_2057_f12dc3bb.html
+├── report_FBA50370_20250219_2057_f12dc3bb.json
+├── report_FBA50370_20250219_2057_f12dc3bb.md
+├── sample_sheet_FBA50370_20250219_2057_f12dc3bb.csv
+├── sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+└── throughput_FBA50370_f12dc3bb_08769d1e.csv
+
+3 directories, 9 files
+#+end_example
+
+And this the project structure folder that will will fill during the data analysis:
+
+#+begin_src bash :results output
+# lets start from scratch
+[ -d ~/nanopore_analysis ] && rm -rf ~/nanopore_analysis
+# create folders to contain the compressed raw data and reports
+mkdir -p ~/nanopore_analysis/01_raw_{fastq_gz,reports}
+# create folders for QC
+mkdir -p ~/nanopore_analysis/02_QC_{fastqc,fastp,minionqc,nanofilt,nanoplot}
+# create folders for Assembly
+mkdir -p ~/nanopore_analysis/03_Assembly_{metaflye,raven,canu}
+# create folders for verification tools Assembly 
+mkdir -p ~/nanopore_analysis/04_QC_Assembly_{metaquast,bandage}
+# show definitive folder structure
+tree ~/nanopore_analysis
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/home/rmedina/nanopore_analysis
+├── 01_raw_fastq_gz
+├── 01_raw_reports
+├── 02_QC_fastp
+├── 02_QC_fastqc
+├── 02_QC_minionqc
+├── 02_QC_nanofilt
+├── 02_QC_nanoplot
+├── 03_Assembly_canu
+├── 03_Assembly_metaflye
+├── 03_Assembly_raven
+├── 04_QC_Assembly_bandage
+└── 04_QC_Assembly_metaquast
+
+12 directories, 0 files
+#+end_example
+
+** from multi-fast.gz to combined_fastq.gz : populating 01_raw_fastq_gz
+
+IMPORTANT: [[https://github.com/nanoporetech/dorado][Dorado]] tool is needed to convert pod5 to fastq, but it's unavailable on the server, so the fastq.gz files provided were used instead the .pod5 files.
+
+The original barcode folders containning multiple files were copied into a single .fastq.gz file (combined_fastq.gz) for each barcode folder:
+
+#+begin_src bash
+cd /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/
+echo "==> Input: fastq.gz multifiles in /group/lectures/../fastq_pass/barcode09-16"
+for folder in barcode09 barcode{10..16} ; do
+  count=$(ls "$folder"/*.gz 2>/dev/null | wc -l) # Count the .gz files in the folder
+  echo "\n  $folder ($count gz files)"
+  mkdir -p ~/nanopore_analysis/01_raw_fastq_gz/"$folder"
+  cat "$folder"/*.gz > ~/nanopore_analysis/01_raw_fastq_gz/"$folder"/combined_fastq.gz
+done
+echo "==> Output: unique gz files"
+tree ~/nanopore_analysis/01_raw_fastq_gz/
+#+end_src
+
+#+RESULTS:
+#+begin_example
+==> Input: fastq.gz multifiles in /group/lectures/../fastq_pass/barcode09-16
+\n  barcode09 (433 gz files)
+\n  barcode10 (433 gz files)
+\n  barcode11 (433 gz files)
+\n  barcode12 (433 gz files)
+\n  barcode13 (433 gz files)
+\n  barcode14 (433 gz files)
+\n  barcode15 (433 gz files)
+\n  barcode16 (433 gz files)
+==> Output: unique gz files
+/home/rmedina/nanopore_analysis/01_raw_fastq_gz/
+├── barcode09
+│   └── combined_fastq.gz
+├── barcode10
+│   └── combined_fastq.gz
+├── barcode11
+│   └── combined_fastq.gz
+├── barcode12
+│   └── combined_fastq.gz
+├── barcode13
+│   └── combined_fastq.gz
+├── barcode14
+│   └── combined_fastq.gz
+├── barcode15
+│   └── combined_fastq.gz
+└── barcode16
+    └── combined_fastq.gz
+
+8 directories, 8 files
+#+end_example
+
+** copy .txt and .tsv reports into: 01_raw_reports
+
+#+begin_src bash
+input=/group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb
+output=~/nanopore_analysis/01_raw_reports
+# copy all that is not a directory into our 01_raw_report directory
+find "$input" -type f ! -name "*.pod5" ! -name "*.fastq.gz" -exec cp {} "$output" \;
+tree "$output"
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/home/rmedina/nanopore_analysis/01_raw_reports
+├── barcode_alignment_FBA50370_f12dc3bb_08769d1e.tsv
+├── final_summary_FBA50370_f12dc3bb_08769d1e.txt
+├── pore_activity_FBA50370_f12dc3bb_08769d1e.csv
+├── pore_scan_data_FBA50370_f12dc3bb_08769d1e.csv
+├── report_FBA50370_20250219_2057_f12dc3bb.html
+├── report_FBA50370_20250219_2057_f12dc3bb.json
+├── report_FBA50370_20250219_2057_f12dc3bb.md
+├── sample_sheet_FBA50370_20250219_2057_f12dc3bb.csv
+├── sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+├── temperature_adjust_data_FBA50370_f12dc3bb_08769d1e.csv
+└── throughput_FBA50370_f12dc3bb_08769d1e.csv
+
+0 directories, 11 files
+#+end_example
+
+* Data Exploration ([[file:d:/BioMasterSem2/Datenanalysen_Labor/4_Quality_control/04_01_QC_DTAN2025.pdf][reference pdf]])
+input: .fastq file or sequencing_summary.txt
+output: different plots and or summary
+
+In accordance with the results of the initial QC different filter 
+parameters will be defined:
+ - trimming of read ends
+ - adapter/barcode removal
+ - filtering mean read quality
+ - filterung read length
+
+** QC: MinIONQC
+
+R script
+ * input: sequencing_summary.txt
+ * output:
+   - summary.yaml
+   - different plots
+ * combining different data sets for possible comparison
+
+install the dependencies (using r console in the terminal)
+
+#+begin_example 
+install.packages(c("data.table", 
+                   "futile.logger",
+                   "ggplot2",
+                   "optparse",
+                   "plyr",
+                   "readr",
+                   "reshape2",
+                   "scales",
+                   "viridis",
+                   "yaml"))
+#+end_example
+
+
+download Rscript MinIONQC.R
+
+#+begin_src bash :results silent
+cd ~/nanopore_analysis/02_QC_minionqc
+curl https://raw.githubusercontent.com/roblanf/minion_qc/master/MinIONQC.R > MinIONQC.R
+#+end_src
+
+In this project, the 433 .fastq files contained in each barcode folder, were joined in one called =combined.fastq=. As a result, each barcode folder contain only one =sequencing_summary.txt=, which will be used as an input for minion_qc
+
+run Rscript MinIONQC.R
+
+#+begin_src bash :results verbatim
+cd ~/nanopore_analysis/02_QC_minionqc
+input=~/nanopore_analysis/01_raw_reports/sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+Rscript MinIONQC.R \
+	--input="$input" \
+	--output=~/nanopore_analysis/02_QC_minionqc \
+	--processors=4 \
+	--qscore_cutoff=7 \
+	--format=tiff \
+	--smallfigures=TRUE
+#+end_src
+
+show Minion_QC.R results
+
+#+begin_src bash :results verbatim
+cat ~/nanopore_analysis/02_QC_minionqc/01_raw_reports/summary.yaml
+#+end_src
+
+#+RESULTS:
+#+begin_example
+input file: /home/rmedina/nanopore_analysis/01_raw_reports/sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+All reads:
+  total.gigabases: 15.0485516
+  total.reads: 7193196
+  N50.length: 4986.0
+  mean.length: 2092.1
+  median.length: 886.0
+  max.length: 824944.0
+  mean.q: 15.0
+  median.q: 15.8
+  reads:
+    '>10kb': 223784
+    '>20kb': 30734
+    '>50kb': 1234
+    '>100kb': 359
+    '>200kb': 67
+    '>500kb': 5
+    '>1m': 0
+    ultralong: 1309.0
+  gigabases:
+    '>10kb': 3.4289455
+    '>20kb': 0.8842515
+    '>50kb': 0.117145
+    '>100kb': 0.0604482
+    '>200kb': 0.0205135
+    '>500kb': 0.0030407
+    '>1m': 0.0
+    ultralong: 0.1208522
+Q>=7:
+  total.gigabases: 14.103934
+  total.reads: 6484927
+  N50.length: 4879.0
+  mean.length: 2174.9
+  median.length: 997.0
+  max.length: 380687.0
+  mean.q: 16.1
+  median.q: 16.4
+  reads:
+    '>10kb': 207637
+    '>20kb': 26607
+    '>50kb': 274
+    '>100kb': 20
+    '>200kb': 3
+    '>500kb': 0
+    '>1m': 0
+    ultralong: 66.0
+  gigabases:
+    '>10kb': 3.0788329
+    '>20kb': 0.6939822
+    '>50kb': 0.0178636
+    '>100kb': 0.0032877
+    '>200kb': 0.0008336
+    '>500kb': 0.0
+    '>1m': 0.0
+    ultralong: 0.0065473
+notes: ultralong reads refers to the largest set of reads with N50>100KB
+
+#+end_example
+
+
+It sounds like you're looking to structure the data exploration and filtering process for your Nanopore metagenomics data. Let me break it down step by step using the tools and methods available:
+
+1. Data Exploration (Initial QC)
+   - *Input*: =.fastq= files or a folder containing them, or =sequencing_summary.txt= files.
+   - *Tools*:
+     - *MinIONQC*: Generate diagnostic plots to explore read quality and sequencing performance.
+     - *NanoPlot*: Visualize distributions (e.g., read length, quality scores) to identify data trends and potential issues.
+   - *Output*: 
+     - Quality control plots (e.g., read quality histograms, length distributions).
+     - Summary statistics about read counts, mean quality, and sequencing performance.
+
+2. Defining Filter Parameters
+   Based on your QC results, establish the filtering criteria:
+   - *Trimming Read Ends*:
+     - Use *NanoFilt* to trim low-quality bases at read ends.
+   - *Adapter/Barcode Removal*:
+     - If adapters or barcodes are present, use tools like *Porechop* to remove them.
+   - *Filtering Mean Read Quality*:
+     - Set a threshold (e.g., minimum Q-score) and filter using *NanoFilt*.
+   - *Filtering by Read Length*:
+     - Use NanoFilt or a custom script to remove reads below or above a specific length threshold.
+
+** fastQC
+
+*** example with only barcode09
+#+begin_src bash
+# fastqc: - requirements (output directory must exist)
+cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode09; do
+  # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  # fastqc "$barcode"/combined.fastq \
+    #        --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+    #        --extract \
+    # 	   --threads 4
+  tree ~/nanopore_analysis/3_fastqc/"$barcode"
+done
+#+end_src
+
+1. Result: all the fastqc results have the same structure
+
+#+begin_example bash 
+/home/rmedina/nanopore_analysis/3_fastqc/barcode09
+├── combined_fastqc
+│   ├── fastqc_data.txt
+│   ├── fastqc.fo
+│   ├── fastqc_report.html
+│   ├── Icons
+│   │   ├── error.png
+│   │   ├── fastqc_icon.png
+│   │   ├── tick.png
+│   │   └── warning.png
+│   ├── Images
+│   │   ├── adapter_content.png
+│   │   ├── duplication_levels.png
+│   │   ├── per_base_n_content.png
+│   │   ├── per_base_quality.png
+│   │   ├── per_base_sequence_content.png
+│   │   ├── per_sequence_gc_content.png
+│   │   ├── per_sequence_quality.png
+│   │   └── sequence_length_distribution.png
+│   └── summary.txt
+├── combined_fastqc.html
+└── combined_fastqc.zip
+
+3 directories, 18 files
+#+end_example
+
+2. Basic Statistics Fastqc: =summary.txt=
+
+The Basic Statistics module provides key data about the analyzed file:
+
+- *Filename*: Name of the analyzed file.  
+- *File type*: Base calls or colorspace.  
+- *Encoding*: ASCII quality format.  
+- *Total Sequences*: Number processed (actual/estimated).  
+- *Filtered Sequences*: Removed sequences (Casava mode).  
+- *Sequence Length*: Shortest to longest range.  
+- *%GC*: Percentage of guanine and cytosine bases.  
+
+here in the folder barcode09 we can see the summary.txt:
+
+#+begin_src bash
+cat ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/summary.txt
+#+end_src
+
+RESULTS:
+#+begin_example bash
+PASS	Basic Statistics	combined.fastq
+FAIL	Per base sequence quality	combined.fastq
+PASS	Per sequence quality scores	combined.fastq
+FAIL	Per base sequence content	combined.fastq
+PASS	Per sequence GC content	combined.fastq
+PASS	Per base N content	combined.fastq
+WARN	Sequence Length Distribution	combined.fastq
+PASS	Sequence Duplication Levels	combined.fastq
+PASS	Overrepresented sequences	combined.fastq
+PASS	Adapter Content	combined.fastq
+#+end_example
+
+
+WE will focus in the statistics with fail and warning signals:
+| FAIL | Per base sequence quality    | combined.fastq |
+| FAIL | Per base sequence content    | combined.fastq |
+| WARN | Sequence Length Distribution | combined.fastq |
+
+*** generate the rest fastqc: from barcode10 to barcode16
+
+#+begin_src bash
+cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode10; do
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+done
+#+end_src
+
+#+begin_src bash
+printf '\n==> summary.txt:\n'
+cat ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/summary.txt
+printf '\n--> fastqc_data.txt:\n'
+head ~/nanopore_analysis/3_fastqc/barcode10/combined_fastqc/fastqc_data.txt
+#+end_src
+
+RESULTS:
+#+begin_example bash
+
+==> summary.txt:
+PASS	Basic Statistics	combined.fastq
+FAIL	Per base sequence quality	combined.fastq
+PASS	Per sequence quality scores	combined.fastq
+FAIL	Per base sequence content	combined.fastq
+FAIL	Per sequence GC content	combined.fastq
+PASS	Per base N content	combined.fastq
+WARN	Sequence Length Distribution	combined.fastq
+PASS	Sequence Duplication Levels	combined.fastq
+PASS	Overrepresented sequences	combined.fastq
+PASS	Adapter Content	combined.fastq
+
+--> fastqc_data.txt:
+##FastQC	0.11.9
+>>Basic Statistics	pass
+#Measure	Value
+Filename	combined.fastq
+File type	Conventional base calls
+Encoding	Sanger / Illumina 1.9
+Total Sequences	729889
+Sequences flagged as poor quality	0
+Sequence length	61-225281
+%GC	36
+#+end_example
+
+ * Per base sequence quality: FAIL
+*Cause*: Sequencing chemistry degrades with increasing read length and for long runs
+*Solution*: sequencing chemistry degrades with increasing read length and for long runs
+
+#+begin_src bash
+ls ~/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/fastqc_report.html
+scp -r -P 1722 bioinf02:/home/rmedina/nanopore_analysis/3_fastqc/barcode09/combined_fastqc/fastqc_report.html /home/riccardo
+#+end_src
+
+*** generate fastqc of all barcodes
+
+#+begin_src bash
+cd ~/nanopore_analysis/2_fastq_decompressed
+for barcode in barcode09 barcode1{0..6}; do
+  mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  fastqc "$barcode"/combined.fastq \
+         --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+         --extract \
+	 --threads 4
+done
+#+end_src
+
+*** check total sequences and the most relevant information from fastqc_data.txt
+
+**** total sequeces fastqc files
+
+Path to the fastqc_data.txt file:
+
+/home/rmedina/nanopore_analysis/3_fastqc/barcode09
+├── combined_fastqc
+│   ├── fastqc_data.txt
+
+**** summary table:
+
+#+begin_src bash
+cd /home/rmedina/nanopore_analysis/3_fastqc
+for barcode in barcode*
+do
+  printf "${barcode}:   "
+  cat /home/rmedina/nanopore_analysis/3_fastqc/"$barcode"/combined_fastqc/fastqc_data.txt \
+    | grep '^Total'
+done
+#+end_src
+
+RESULTS:
+| barcode09: | Total Sequences	1065437 |
+| barcode10: | Total Sequences	729889  |
+| barcode11: | Total Sequences	1217908 |
+| barcode12: | Total Sequences	667557  |
+| barcode13: | Total Sequences	407956  |
+| barcode14: | Total Sequences	83556   |
+| barcode15: | Total Sequences	735701  |
+| barcode16: | Total Sequences	1156564 |
+
+
+a table with a most detailed information in fastqc_data.txt
+- Total Sequences
+- Sequences flagged as poor quality
+- Sequence length
+
+#+begin_src bash :wrap src org
+cd ~/nanopore_analysis/2_fastq_decompressed
+print_separator() {
+    printf "|-------------------------------------+-----------------------|\n"
+}
+for barcode in barcode09 barcode1{0..6}; do
+  # mkdir -p ~/nanopore_analysis/3_fastqc/"$barcode"
+  # fastqc "$barcode"/combined.fastq \
+  #        --outdir ~/nanopore_analysis/3_fastqc/"$barcode" \
+  #        --extract \
+  # 	 --threads 4
+	 fastqc_file="../3_fastqc/${barcode}/combined_fastqc/fastqc_data.txt"
+
+  # Function to print the horizontal separator
+  # Print table header
+  print_separator
+  printf "| dir: %-30s |  file: %-14s |\n" "${barcode}" "combined.fastq"
+  print_separator
+  
+  # Check if the file exists and format the output
+  if [[ -f "$fastqc_file" ]]; then
+    # Define the specific lines to extract
+    sed -n '6p;7p;8p;9p;10p' "$fastqc_file" | while IFS=$'\t' read -r measure value; do
+    printf "| %-35s | %-21s |\n" "$measure" "$value"
+    done
+  else
+    printf "| %-35s | %-21s |\n" "File Missing" "N/A"
+  fi
+done
+print_separator
+#+end_src
+
+RESULTS:
+|-------------------------------------+-----------------------|
+| dir: barcode09                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 1065437               |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 29-391635             |
+| %GC                                 | 42                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode10                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 729889                |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 61-225281             |
+| %GC                                 | 36                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode11                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 1217908               |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 64-305294             |
+| %GC                                 | 44                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode12                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 667557                |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 44-259254             |
+| %GC                                 | 44                    |
+
+|-------------------------------------+-----------------------|
+| dir: barcode13                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 407956                |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 42-380798             |
+| %GC                                 | 40                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode14                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 83556                 |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 59-242572             |
+| %GC                                 | 43                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode15                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 735701                |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 29-397562             |
+| %GC                                 | 69                    |
+|-------------------------------------+-----------------------|
+
+|-------------------------------------+-----------------------|
+| dir: barcode16                      |  file: combined.fastq |
+|-------------------------------------+-----------------------|
+| Encoding                            | Sanger / Illumina 1.9 |
+| Total Sequences                     | 1156564               |
+| Sequences flagged as poor quality   | 0                     |
+| Sequence length                     | 59-241224             |
+| %GC                                 | 45                    |
+|-------------------------------------+-----------------------|
+
+** TODO QC: fastp
+ 
+#+begin_src sh :results output
+# cd ~/nanopore_analysis/0_scripts
+mkdir -p ~/nanopore_analysis/4_fastp
+cd $_
+wget http://opengene.org/fastp/fastp
+chmod a+x ./fastp
+ls -hs fastp
+#+end_src
+
+#+RESULTS:
+: 9,1M fastp
+
+# #+begin_src sh :results output
+# ~/nanopore_analysis/4_fastp
+# for barcode in "/home/rmedina/nanopore_analysis/2_fastq_decompressed/barcode09":
+# do
+#   # ls $barcodecode
+# done
+# #fastp -i ../2_fastq_decompressed/barcode01
+# # fastp -i ../2_fastq_decompressed 
+# # cd ~/nanopore_analysis/4_fastp 
+# #+end_src
+
+** NanoPlot: Visualize data
+
+#+begin_src bash
+NanoPlot --fastq <path_to_fastq> --plots hex dot
+#+end_src
+
+** NanoFilt : Filter reads
+
+#+begin_src bash
+NanoFilt -q 7 --length 1000 <input.fastq> > filtered.fastq
+#+end_src
+
+This example sets a minimum Q-score of 7 and a minimum read length of 1000 bp.
+
+
+
+* relevant aditional information
+
+
+** tools available in server
+#+begin_src bash
+ls /group/bin/kaiju*
+ls /group/bin/kraken*
+#+end_src
+
+#+RESULTS:
+: /group/bin/kaiju
+: /group/bin/kaiju2krona
+: /group/bin/kaiju2table
+: /group/bin/kaiju-addTaxonNames
+: /group/bin/kaiju-mergeOutputs
+: /group/bin/kallisto
+: /group/bin/kraken2
+: /group/bin/kraken2-build
+: /group/bin/kraken2-inspect
+
+
+* databases for kraken:
+
+#+begin_src bash
+tree -d /group/db
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/group/db
+├── blastdb
+│   ├── refseq_prot
+│   └── refseq_rna
+├── bowtie2db_v31_2019
+├── bowtie2db_vJan21
+├── bowtie2GRCh38
+├── centrifuge
+├── diamonduniprot
+├── humann
+│   ├── chocophlan
+│   ├── chocophlan_v201901
+│   └── uniref
+├── k2leather
+│   ├── library
+│   │   ├── added
+│   │   └── human
+│   └── taxonomy
+├── kaijudb
+│   ├── nr
+│   └── nr_euk
+├── kraken
+├── Kraken2_092024
+├── minimap2leather
+└── taxonomy
+
+24 directories
+#+end_example
+
+* detete the whole project
+
+#+begin_src bash
+rm rf ~/nanopore_analysis/
+#+end_src
