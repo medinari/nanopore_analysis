@@ -1,13 +1,13 @@
 #+startup: showeverything
-#+title: QC
+#+title: Oxford Nanopore Technology ONT sequencing - data analysis
 #+OPTIONS: \n:t ':t toc:t title:nil
 #+PROPERTY: header-args:bash :results verbatim
 
-* QC
+* creating project directory and linking ONT fastq.gz data
 
-** create project folder and links to FATSQ raw data files:
+** create project folder and links to FATSQ raw fsatq.gz files:
 
-*** Create a project folder
+*** Create project folders
 
 #+begin_src bash :results output
 # create folders for compressed raw data, and decompressed raw data 
@@ -40,7 +40,7 @@ for folder in barcode09 barcode1{0..6}; do
   count=$(ls "$folder"/*.gz 2>/dev/null | wc -l) # Count the .gz files in the folder
   echo "Folder: $folder ($count gz files)"
 done
-# create links to raw data (all the barcode directories with fastq.gz files stored in fastq_pass)
+# create links to ALL barcode01-24/fastq.gz files stored in fastq_pass 
 ln -s /group/lectures/DTAN25data/BIOINF26_Gruppe2/no_sample_id/20250219_2052_MN35031_FBA50370_f12dc3bb/fastq_pass/* ~/nanopore_analysis/1_raw_data
 # remove non-relevant folders (barcodes 01-08 and barcodes 17-24 and also the unclassified...)
 ls | grep -vE 'barcode0[9-9]|barcode1[0-6]' | xargs rm
@@ -69,6 +69,17 @@ ls -hs ~/nanopore_analysis/2_fastq_decompressed/*/*
 # cat ~/nanopore_analysis/2_fastq_decompressed/barcode01/combined.fastq | head -n 10
 #+end_src
 
+* Data Exploration ([[file:d:/BioMasterSem2/Datenanalysen_Labor/4_Quality_control/04_01_QC_DTAN2025.pdf][reference pdf]])
+input: .fastq file or sequencing_summary.txt
+output: different plots and or summary
+
+In accordance with the results of the initial QC different filter 
+parameters will be defined:
+ - trimming of read ends
+ - adapter/barcode removal
+ - filtering mean read quality
+ - filterung read length
+
 ** fastQC
 
 *** example with only barcode09
@@ -85,7 +96,7 @@ for barcode in barcode09; do
 done
 #+end_src
 
-RESULTS: all the fastqc results have the same structure
+1. Result: all the fastqc results have the same structure
 
 #+begin_example bash 
 /home/rmedina/nanopore_analysis/3_fastqc/barcode09
@@ -114,7 +125,7 @@ RESULTS: all the fastqc results have the same structure
 3 directories, 18 files
 #+end_example
 
-BASIC STATISTICS FASTQC: summary.txt
+2. Basic Statistics Fastqc: =summary.txt=
 
 The Basic Statistics module provides key data about the analyzed file:
 
@@ -146,6 +157,14 @@ PASS	Overrepresented sequences	combined.fastq
 PASS	Adapter Content	combined.fastq
 #+end_example
 
+
+WE will focus in the statistics with fail and warning signals:
+| FAIL | Per base sequence quality    | combined.fastq |
+| FAIL | Per base sequence content    | combined.fastq |
+| WARN | Sequence Length Distribution | combined.fastq |
+
+
+
 *** generate the rest fastqc: from barcode10 to barcode16
 
 #+begin_src bash
@@ -175,7 +194,7 @@ FAIL	Per base sequence quality	combined.fastq
 PASS	Per sequence quality scores	combined.fastq
 FAIL	Per base sequence content	combined.fastq
 FAIL	Per sequence GC content	combined.fastq
-PASS	Per base N content	combiZDVCned.fastq
+PASS	Per base N content	combined.fastq
 WARN	Sequence Length Distribution	combined.fastq
 PASS	Sequence Duplication Levels	combined.fastq
 PASS	Overrepresented sequences	combined.fastq
@@ -392,7 +411,72 @@ ls -hs fastp
 # # cd ~/nanopore_analysis/4_fastp 
 # #+end_src
 
-* TODO QC: MinIONQC
+** TODO QC: MinIONQC
+
+R script
+ * input: sequencing_summary.txt
+ * output:
+   - summary.yaml
+   - different plots
+ * combining different data sets for possible comparison
+
+download Rscript minion_qc
+#+begin_src bash :results verbatim
+mkdir -p ~/nanopore_analysis/5_minionqc
+cd ~/nanopore_analysis/5_minionqc
+
+curl https://raw.githubusercontent.com/roblanf/minion_qc/master/MinIONQC.R > MinIONQC.R
+#+end_src
+
+In this project, the 433 .fastq files contained in each barcode folder, were joined in one called =combined.fastq=. As a result, each barcode folder contain only one =sequencing_summary.txt=, which will be used as an input for minion_qc
+
+run the script
+#+begin_src bash :results verbatim
+cd ~/nanopore_analysis/5_minionqc
+Rscript MinIONQC.R \
+	--input=~/nanopore_analysis/3_fastqc \
+	--output=~/nanopore_analysis/5_minionqc \
+	--processors=4 \
+	--qscore_cutoff=7 \
+	--format=tiff \
+	--smallfigures=TRUE
+#+end_src
+It sounds like you're looking to structure the data exploration and filtering process for your Nanopore metagenomics data. Let me break it down step by step using the tools and methods available:
+
+1. Data Exploration (Initial QC)
+   - *Input*: =.fastq= files or a folder containing them, or =sequencing_summary.txt= files.
+   - *Tools*:
+     - *MinIONQC*: Generate diagnostic plots to explore read quality and sequencing performance.
+     - *NanoPlot*: Visualize distributions (e.g., read length, quality scores) to identify data trends and potential issues.
+   - *Output*: 
+     - Quality control plots (e.g., read quality histograms, length distributions).
+     - Summary statistics about read counts, mean quality, and sequencing performance.
+
+2. Defining Filter Parameters
+   Based on your QC results, establish the filtering criteria:
+   - *Trimming Read Ends*:
+     - Use *NanoFilt* to trim low-quality bases at read ends.
+   - *Adapter/Barcode Removal*:
+     - If adapters or barcodes are present, use tools like *Porechop* to remove them.
+   - *Filtering Mean Read Quality*:
+     - Set a threshold (e.g., minimum Q-score) and filter using *NanoFilt*.
+   - *Filtering by Read Length*:
+     - Use NanoFilt or a custom script to remove reads below or above a specific length threshold.
+
+** NanoPlot: Visualize data
+
+#+begin_src bash
+NanoPlot --fastq <path_to_fastq> --plots hex dot
+#+end_src
+
+** NanoFilt : Filter reads
+
+#+begin_src bash
+NanoFilt -q 7 --length 1000 <input.fastq> > filtered.fastq
+#+end_src
+
+This example sets a minimum Q-score of 7 and a minimum read length of 1000 bp.
+
 
 
 * relevant aditional information
