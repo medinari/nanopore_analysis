@@ -274,6 +274,17 @@ notes: ultralong reads refers to the largest set of reads with N50>100KB
 
 #+end_example
 
+#+begin_src bash :results verbatim
+mkdir -p ~/nanopore_analysis/02_QC_minionqc_2
+cd ~/nanopore_analysis/02_QC_minionqc
+input=~/nanopore_analysis/01_raw_reports/sequencing_summary_FBA50370_f12dc3bb_08769d1e.txt
+Rscript MinIONQC.R \
+	--input="$input" \
+	--output=~/nanopore_analysis/02_QC_minionqc_2 \
+	--processors=6 \
+	--qscore_cutoff=10 \
+	--format=png
+#+end_src
 
 It sounds like you're looking to structure the data exploration and filtering process for your Nanopore metagenomics data. Let me break it down step by step using the tools and methods available:
 
